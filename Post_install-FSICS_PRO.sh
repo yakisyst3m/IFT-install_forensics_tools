@@ -7,6 +7,7 @@
 # 2022 02 03    v1.1
 # 2022 02 17    v1.2
 # 2022 03 06    v2.0
+# 2022 03 06    v2.1
 
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
@@ -28,11 +29,7 @@ neutre='\e[0;m'
 ######## PREPARATION ###########################################################
 
 utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
-#chmod -R 750 *
-#chown -R $utilisateur: *
 
-#echo -e "${jaune}Utiliser 'sudo' ou root :\nSi [OK] appuyer sur [ENTRER]\nSinon appuyer sur [Ctrl + c]${neutre}"
-#read test1
 
 ######## VERIFICATION PRESENCE DU DOSSIER D'INSTALLATION AU BON ENDROIT
 
@@ -61,7 +58,6 @@ then
     echo "deb-src http://security.debian.org/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list
     echo "deb http://deb.debian.org/debian/ bullseye-updates main contrib non-free" >> /etc/apt/sources.list
     echo "deb-src http://deb.debian.org/debian/ bullseye-updates main contrib non-free" >> /etc/apt/sources.list
-    #echo "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian bullseye contrib" >> /etc/apt/sources.list
     echo "deb http://deb.debian.org/debian bullseye-backports main contrib non-free" >> /etc/apt/sources.list
 
     apt update && apt install -y apt-transport-https
@@ -143,11 +139,6 @@ sleep 2
 # Désactivation IPv6
 echo -e "\n##############################################\n"
 echo -e "${bleu}[ Désactivation de l'IPv6 ]${neutre}"
-#echo "net.ipv6.conf.all.disable_ipv6=1" >> /etc/sysctl.conf
-#echo "net.ipv6.conf.all.autoconf=0" >> /etc/sysctl.conf
-#echo "net.ipv6.conf.default.disable_ipv6=1" >> /etc/sysctl.conf
-#echo "net.ipv6.conf.default.autoconf=0" >> /etc/sysctl.conf
-#sysctl -p
 
 if [ "grep -q 'net.ipv6.conf.all.disable_ipv6' /etc/sysctl.conf" ] ; then # si la ligne existe / -q pour mode silencieux, ne note rien à l'écran
     sed -ri 's/(net\.ipv6\.conf\.all\.disable_ipv6=0|#net\.ipv6\.conf\.all\.disable_ipv6=0|#net\.ipv6\.conf\.all\.disable_ipv6=1)/net\.ipv6\.conf\.all\.disable_ipv6=1/g' /etc/sysctl.conf  && echo -e "${vert} [ OK ] net.ipv6.conf.all.disable_ipv6=1 : paramétré ${neutre}"
@@ -263,35 +254,45 @@ else
     echo -e "${rouge}Pas d'installation de GDB et GDB-PEDA${neutre}"
 fi
 
+######################## INSTALLATION DE VOLATILITY 2.6 OU 3 #####################################"
+
+echo -e "\n##############################################\n"
+echo -e "${bleu}Voulez-vous installer Volatility 2.6 ou volatility 3 ? ${neutre}"
+echo "[ 1 ] - Installer Volatility 2.6"
+echo "[ 2 ] - Installer Volatility 3"
+echo "[ Autre touche ] - Pour pour ne pas installer volatility" 
+read INSTALL
+
 
 ########    INSTALLER VOLATILITY 2.6
 
-echo -e "\n##############################################\n"
-echo -e "${bleu}Voulez-vous installer Volatility 2.6 ? ( y / n )${neutre}"
-read INSTALL
 
-if [ "$INSTALL" = "y" ]
+
+if [ "$INSTALL" = "1" ]
 then
+    echo -e "\n##############################################\n"
+    echo -e "${bleu}[ Installation de Volatility 2.6 ... ]${neutre}"
+    sleep 2
     # Préparation avant installation
     cd /home/$utilisateur/Documents/
-    echo "Début de l'installation et des mises à jour :"
-    echo "Install des librairies"
-    apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility installés ${neutre}"
+    echo "Début de l'installation et des mises à jour de Volatility 2.6 :"
+    echo "Installation des librairies"
+    apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 2.6 installés ${neutre}"
     sleep 1
     
-    # Installation de python
-    echo"Install des outils python"
+    # Installation de python 2
+    echo "Installation des outils python 2"
     apt install -y python2 python2.7-dev libpython2-dev
     curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
     python2 get-pip.py
-    python2 -m pip install -U setuptools wheel  && echo -e "${vert} [ OK ] Outils python pour Volatility installés ${neutre}"
+    python2 -m pip install -U setuptools wheel  && echo -e "${vert} [ OK ] Outils python pour Volatility 2.6 installés ${neutre}"
     sleep 1
     
     # Installation des modules volatility
     echo "Install des dépendences"
     python2 -m pip install -U distorm3 yara pycrypto pillow openpyxl ujson pytz ipython capstone
     python2 -m pip install yara
-    ln -s /usr/local/lib/python2.7/dist-packages/usr/lib/libyara.so /usr/lib/libyara.so  && echo -e "${vert} [ OK ] Dépendences de Volatility installés ${neutre}"
+    ln -s /usr/local/lib/python2.7/dist-packages/usr/lib/libyara.so /usr/lib/libyara.so  && echo -e "${vert} [ OK ] Dépendences de Volatility 2.6 installés ${neutre}"
     sleep 1
     
     # Téléchargement et Installation de volatility 2.6
@@ -300,10 +301,51 @@ then
     
     # Configuration du PATH de env pour volatility
     echo "export PATH=/home/$utilisateur/.local/bin:"'$PATH' >> ~/.bashrc
-    . ~/.bashrc
+    . ~/.bashrc && echo -e "${vert} [ OK ] PATH $utilisateur mis à jour ${neutre}"
+    
+    # Test
+    vol.py -h
+    vol.py --info
+    
+elif [ "$INSTALL" = "2" ]
+then
+    echo -e "\n##############################################\n"
+    echo -e "${bleu}[ Installation de Volatility 3 ... ]${neutre}"
+    sleep 2
+    # Préparation avant installation
+    cd /home/$utilisateur/
+    echo "Début de l'installation et des mises à jour de Volatility 3:"
+    echo "Installation des librairies"
+    apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 3 installés ${neutre}"
+    sleep 1
+
+    # Installation de python 3
+    echo "Installation des outils python 3"
+    apt install -y python3 python3-dev libpython3-dev python3-pip python3-setuptools python3-wheel git && echo -e "${vert} [ OK ] Outils python pour Volatility 3 installés ${neutre}"
+
+    # Téléchargement et Installation de volatility 3
+    git clone https://github.com/volatilityfoundation/volatility3.git
+    mv volatility3 /home/$utilisateur/.volatility3
+    cd /home/$utilisateur/.volatility3
+    chmod -R 750 *
+    chown -R $utilisateur: * && echo -e "${vert} [ OK ] Volatility 3 téléchargé ${neutre}"
+    
+    # Installation des modules volatility
+    pip3 install -r requirements.txt
+    
+    # Configuration du PATH de env pour volatility 3
+    echo "export PATH=/home/$utilisateur/.volatility3:"'$PATH' >> /home/$utilisateur/.bashrc
+    echo "export PATH=/home/$utilisateur/.volatility3:"'$PATH' >> /root/.bashrc
+    . /home/$utilisateur/.bashrc && echo -e "${vert} [ OK ] PATH $utilisateur mis à jour ${neutre}"
+    . /root/.bashrc && echo -e "${vert} [ OK ] PATH root mis à jour ${neutre}"
+    
+    # Test
+    vol.py -h
+    vol.py --info
 else
     echo -e "${rouge}Pas d'installation Volatility${neutre}"
 fi
+
 
 ########    INSTALLER DES OUTILS REGRIPPER V3
 
