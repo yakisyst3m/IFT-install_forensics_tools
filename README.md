@@ -7,7 +7,7 @@
 - install.sh : [ Lancer en **root** ]
   - *est destiné à installer uniquement les outils Forensics sur un poste de travail* **PRO**
   ```
-  toto@debian:~/Documents/Debian11-Post_Install$ sudo ./install.sh
+  toto@debian:~$ sudo ./install.sh
   ```
 ## 2 - Logiciels installés + exemples d'utilisation :
 :radio_button: Reverse :
