@@ -3,7 +3,7 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/yakisyst3m/post_install_linux_install_forensics_tools) ![GitHub release-date](https://img.shields.io/github/release-date/yakisyst3m/post_install_linux_install_forensics_tools)
 
 ## 1 - Présentation :
-**Il y a 1 Scripts de post-installation pour la configuration automatique des outils Forensics pour Debian et Ubuntu :**
+**Il y a 1 Script de post-installation pour la configuration automatique des outils Forensics pour Debian et Ubuntu :**
 - install.sh : [ Lancer en **root** ]
   - *est destiné à installer uniquement les outils Forensics sur un poste de travail* **PRO**
   ```
