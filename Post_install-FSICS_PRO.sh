@@ -471,6 +471,7 @@ while [ "$reponse" != "o" ] ; do
     echo -e "[ ${bleu}16${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
     echo -e "[ ${violet}17${neutre} ] - Tout installer"
     echo
+    echo -e "[  ${rouge}F${neutre} ] - Taper F pour finaliser l'installation...\n"
     echo -e "[  ${rouge}Q${neutre} ] - Taper Q pour quitter...\n"
     read -p "Entrer votre choix : " INSTALL;
     echo
@@ -509,8 +510,8 @@ while [ "$reponse" != "o" ] ; do
     "16")
         vbox ;;
     "17")
-        echo -e "[ 17 ] - Voulez-vous tout installer ? ( taper 'o' pour Oui / taper 'n' pour Non )"
-        read reponse ;;
+        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat3 ; reginst ; burinst ; diskinst ; mftinst ; forall ; forextra ; forextragui ; vbox ;;
+    f|F) break ;;
     q|Q) exit ;;
     *) continue ;;
     esac     
