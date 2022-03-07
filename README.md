@@ -10,6 +10,31 @@ Une fois Debian ou Ubuntu installé, il suffit de lancer ce script pour obtenir 
   ```
   toto@debian:~$ sudo ./install.sh
   ```
+  
+**Faites votre choix d'installation :**  
+[  1 ] - Modification des source.list + Mise à jour des paquets  
+[  2 ] - Installation des logiciels de base  
+[  3 ] - Configuration des applications : Wireshark / déscativation IPv6 / Activation du pavé numérique / Tmux / Vim  
+[  4 ] - Création de l'architecture des dossiers : pour montage des disques windows et linux à analyser  
+[  5 ] - Installation de clamav + Mise à jour des signatures AV  
+[  6 ] - Installation des outils de Reverse : gdb-peda  
+[  7 ] - Installation de volatility 2.6  
+[  8 ] - Installation de volatility 3  
+[  9 ] - Installation de Regripper : analyse registre Windows  
+[ 10 ] - Installation des outils de bureautique : thunderbird / readpst / msgconvert  
+[ 11 ] - Installation des outils de disques : guymager / qemu / suite ewf / hdparm / sdparm   
+[ 12 ] - Installation des Outils de Timeline et Artefacts Windows : La suite plaso / ewf / olevba3 / prefetch / ShimCacheParser  
+[ 13 ] - Installation du paquet : forensics-all  
+[ 14 ] - Installation du paquet : forensics-extra  
+[ 15 ] - Installation du paquet : forensics-extra-gui  
+[ 16 ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack  
+[ 17 ] - Tout installer  
+  
+[  Q ] - Taper Q pour quitter...  
+  
+Entrer votre choix :   
+
+  
 ## 2 - Logiciels installés + exemples d'utilisation :
 :radio_button: Reverse :
 - gdb + gdb-peda
