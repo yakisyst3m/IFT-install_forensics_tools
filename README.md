@@ -19,7 +19,7 @@ Une fois Debian ou Ubuntu installé, il suffit de lancer ce script pour obtenir 
 - forensics-extra
 - forensics-extra-gui
 
-:radio_button: Reverse :
+:radio_button: Machines virtuelles :
 - VirtualBox 6.1 + Extension Pack
 
 :radio_button: Analyse Réseau :
@@ -201,4 +201,4 @@ readpst -M -u -e -b toto.tutu@domaine.pst
 msgconvert monMessage.msg
 ```
 - thunderbird `Boîte mail Open Source`  
-- msgconvert
+
