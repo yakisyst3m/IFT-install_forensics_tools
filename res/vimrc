@@ -1,0 +1,5 @@
+set number
+set autoindent
+set tabstop=6
+syntax on
+set showmode
