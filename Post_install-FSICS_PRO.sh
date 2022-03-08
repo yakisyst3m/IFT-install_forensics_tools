@@ -511,7 +511,7 @@ while [ "$reponse" != "o" ] ; do
     "16")
         vbox ;;
     "17")
-        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat3 ; reginst ; burinst ; diskinst ; mftinst ; forall ; forextra ; forextragui ; vbox ;;
+        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; reginst ; burinst ; diskinst ; mftinst ; forall ; forextra ; forextragui ; vbox ;;
     f|F) break ;;
     q|Q) exit ;;
     *) continue ;;
