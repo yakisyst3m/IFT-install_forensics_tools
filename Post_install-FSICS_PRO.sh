@@ -6,9 +6,10 @@
 # 2022 01 22    v1.0
 # 2022 02 03    v1.1
 # 2022 02 17    v1.2
-# 2022 03 06    v2.0
-# 2022 03 06    v2.1
-# 2022 03 07    v2.1-1
+# 2022 03 06    v2.0 
+# 2022 03 06    v2.1 mise en place du menu + fonctions
+# 2022 03 07    v2.1-1 Modif ShimCacheParser.py
+# 2022 03 07    v2.1-2 Modif nommage volatility : vol2.py pour volatility 2.6 / vol3.py pour volatility 3
 
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
