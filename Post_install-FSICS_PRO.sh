@@ -97,9 +97,8 @@ function installbase() {
         echo -e "\n##############################################\n"
         echo -e "${bleu}[ Correction des erreurs au boot et à l'arrêt ]${neutre}"
         apt install -y libblockdev-mdraid2 libblockdev* apt-file 
-        apt install -y firmware-linux
+        apt install -y firmware-linux firmware-linux-free firmware-linux-nonfree && echo -e "${vert} [ OK ] Le firmware-linux-nonfree pour Debian Installés ${neutre}"
         update-initramfs -u -k all && echo -e "${vert} [ OK ] Correction des erreurs au boot et à l'arrêt effectué ${neutre}"
-        apt install -y firmware-linux-nonfree  && echo -e "${vert} [ OK ] Le firmware-linux-nonfree pour Debian Installés ${neutre}"
         sleep 2
     fi
 
@@ -254,7 +253,6 @@ function volat2() {
     # Installation des modules volatility
     echo "Install des dépendences"
     python2 -m pip install -U distorm3 yara pycrypto pillow openpyxl ujson pytz ipython capstone
-    python2 -m pip install yara
     ln -s /usr/local/lib/python2.7/dist-packages/usr/lib/libyara.so /usr/lib/libyara.so  && echo -e "${vert} [ OK ] Dépendences de Volatility 2.6 installés ${neutre}"
     sleep 1
     
@@ -262,13 +260,16 @@ function volat2() {
     python2 -m pip install -U git+https://github.com/volatilityfoundation/volatility.git  && echo -e "${vert} [ OK ] Volatility 2.6 installé ${neutre}"
     sleep 1
     
+    # Renommage de fichier
+    mv /usr/local/bin/vol.py /usr/local/bin/vol2.py
+    
     # Configuration du PATH de env pour volatility
     echo "export PATH=/home/$utilisateur/.local/bin:"'$PATH' >> ~/.bashrc
     . ~/.bashrc && echo -e "${vert} [ OK ] PATH $utilisateur mis à jour ${neutre}"
     
     # Test
-    vol.py -h
-    vol.py --info
+    vol2.py -h
+    vol2.py --info
 }
         
     ########    INSTALLER VOLATILITY 3
@@ -292,6 +293,7 @@ function volat3() {
     git clone https://github.com/volatilityfoundation/volatility3.git
     mv volatility3 /home/$utilisateur/.volatility3
     cd /home/$utilisateur/.volatility3
+    mv vol.py vol3.py
     chmod -R 750 *
     chown -R $utilisateur: * && echo -e "${vert} [ OK ] Volatility 3 téléchargé ${neutre}"
     
@@ -305,8 +307,7 @@ function volat3() {
     . /root/.bashrc && echo -e "${vert} [ OK ] PATH root mis à jour ${neutre}"
     
     # Test
-    vol.py -h
-    vol.py --info
+    vol3.py -h
 }
 
 
