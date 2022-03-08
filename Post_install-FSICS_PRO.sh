@@ -71,7 +71,7 @@ function mjour() {
         echo "deb http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse"  >> /etc/apt/sources.list
         echo "deb http://fr.archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse"  >> /etc/apt/sources.list
         echo "deb-src http://fr.archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse"  >> /etc/apt/sources.list
-        echo "deb-src http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse"  >> /etc/apt/sources.list
+        echo "deb-src http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse"  >> /etc/apt/soyakisyst3m/post_install_linux_install_forensics_toolsurces.list
         echo "deb-src http://fr.archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse"  >> /etc/apt/sources.list
         echo "deb http://fr.archive.ubuntu.com/ubuntu/ focal-backports main restricted universe multiverse"  >> /etc/apt/sources.list
 
@@ -381,8 +381,6 @@ function mftinst() {
     cp -r ShimCacheParser-master /home/$utilisateur/
     chmod -R 750 /home/$utilisateur/ShimCacheParser-master/ && echo -e "${vert} [ OK ] ShimCacheParser installé dans : /home/$utilisateur/ShimCacheParser-master/  ${neutre}"
     chown -R $utilisateur: /home/$utilisateur/ShimCacheParser-master/
-    echo "export PATH=/home/$utilisateur/ShimCacheParser-master:$PATH" >> /home/$utilisateur/.bashrc
-    source /home/$utilisateur/.bashrc
 }
 
     ########    FORENSICS-ALL
