@@ -449,9 +449,18 @@ function vbox() {
 
 ######## MENU ###########################################################
 
-
-while [ "$reponse" != "o" ] ; do
-    #clear
+clear
+while true ; do 
+echo -e "${vert}       ________      ______     _________ ${neutre}"
+echo -e "${vert}      /_______/\    /_____/\   /________/\ ${neutre}"
+echo -e "${vert}      \__.::._\/    \::::_\/_  \__.::.__\/ ${neutre}"
+echo -e "${vert}         \::\ \      \:\/___/\    \::\ \   ${neutre}"
+echo -e "${vert}         _\::\ \__    \:::._\/     \::\ \  ${neutre}"
+echo -e "${vert}        /__\::\__/\    \:\ \        \::\ \ ${neutre}"
+echo -e "${vert}        \________\/     \_\/         \__\/  ${neutre}"               
+echo " "
+echo -e "${rouge}         -- [ INSTALL FORENSICS TOOLS ] --${neutre}"
+echo " "
     echo -e "${bleu}Faites votre choix d'installation :${neutre}"
     echo -e "${vert}-----------------------------------${neutre}"
     echo -e "[  ${bleu}1${neutre} ] - Modification des source.list + Mise à jour des paquets"
