@@ -20,8 +20,8 @@ Une fois Debian ou Ubuntu installé, il suffit de lancer ce script pour obtenir 
 [  4 ] - Création de l'architecture des dossiers : pour montage des disques windows et linux à analyser  
 [  5 ] - Installation de clamav + Mise à jour des signatures AV  
 [  6 ] - Installation des outils de Reverse : gdb-peda  
-[  7 ] - Installation de volatility 2.6 (peut cohabiter avec volatility 3)
-[  8 ] - Installation de volatility 3 (peut cohabiter avec volatility 2)
+[  7 ] - Installation de volatility 2.6 (peut cohabiter avec volatility 3)  
+[  8 ] - Installation de volatility 3 (peut cohabiter avec volatility 2)  
 [  9 ] - Installation de Regripper : analyse registre Windows  
 [ 10 ] - Installation des outils de bureautique : thunderbird / readpst / msgconvert  
 [ 11 ] - Installation des outils de disques : guymager / qemu / suite ewf / hdparm / sdparm   
