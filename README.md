@@ -124,6 +124,7 @@ prefetch.py -c -d /mnt/win1/Windows/Prefetch/ > /cases/w_01/prefetch/prefetch.cs
 - ShimCacheParser.py `Exécutions lancées depuis le redémarrage + EXECUTABLES PARCOURUS`  
 *Exemples : *
 ```
+python2.7 ShimCacheParser.py –h
 ShimCacheParser.py –i [RUCHE]
 ShimCacheParser.py -i "/mnt/win1/Windows/System32/config/SYSTEM"| grep cssrs
 ```
