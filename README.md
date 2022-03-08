@@ -94,7 +94,13 @@ photorec TP1-Disque.img
 
 :radio_button: Mémoire Vive :
 - volatility 2.6
+```
+vol2.py -h
+```  
 - ou volatility 3
+```
+vol3.py -h
+```  
 
 :radio_button: Artefacts Windows - LES RUCHES :
 - RegRipper 3.0 `Extraire et parser la base de registre`  
