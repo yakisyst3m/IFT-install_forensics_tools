@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # https://github.com/yakisyst3m 
-# V2.0
 
 # 2022 01 22    v1.0
 # 2022 02 03    v1.1
@@ -10,6 +9,7 @@
 # 2022 03 06    v2.1 mise en place du menu + fonctions
 # 2022 03 07    v2.1-1 Modif ShimCacheParser.py
 # 2022 03 07    v2.1-2 Modif nommage volatility : vol2.py pour volatility 2.6 / vol3.py pour volatility 3
+# 2022 03 09    v2.1-3 Correctif chemins + python3 + fcontion validchg
 
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
@@ -18,6 +18,7 @@
 VERSION_OS=$(egrep '^ID=' /etc/os-release | cut -d "=" -f2)
 ENVBUREAU="/etc/mate/"
 GESTCONNECTION="/etc/lightdm/"
+cheminInstall="/home/$utilisateur/Documents/Linux-Post_Install/"
 
 rouge='\e[1;31m'
 vert='\e[1;32m'
@@ -32,12 +33,11 @@ neutre='\e[0;m'
 utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
 
 
-######## version os DEBIAN ####################################################
+######## MODIFICATION DES SOURCE.LIST ####################################################
 
+    ######## version os DEBIAN ####################################################
 function mjour() {
     if [ $VERSION_OS = 'debian' ] ; then
-        ######## MAJ SOURCELIST
-
         echo -e "${bleu}[ Mise à jour de source.list de Debian ]${neutre}"
         echo "deb http://deb.debian.org/debian/ bullseye main non-free contrib" > /etc/apt/sources.list
         echo "deb-src http://deb.debian.org/debian/ bullseye main non-free contrib" >> /etc/apt/sources.list
@@ -60,13 +60,9 @@ function mjour() {
             sed -i '/\[Manager]/a DefaultTimeoutStopSec=20s' /etc/systemd/system.conf && echo -e "${vert} [ OK ] Correction des erreurs au boot et à l'arrêt effectué ${neutre}"
         fi
         sleep 2
-          
-            
-        ######## version os UBUNTU ############################################################"
-        
+                      
+    ######## version os UBUNTU ############################################################"
     elif [ $VERSION_OS = 'ubuntu' ] ; then
-        ######## MAJ SOURCELIST
-        
         echo -e "${bleu}[ Mise à jour de source.list de Ubuntu ]${neutre}"
         echo "deb http://fr.archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse"  > /etc/apt/sources.list
         echo "deb http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse"  >> /etc/apt/sources.list
@@ -85,12 +81,12 @@ function mjour() {
 }
 
 
-    ######## INSTALL DES LOGICIELS DE BASE #################################################################################
+######## INSTALL DES LOGICIELS DE BASE #################################################################################
 
 function installbase() {
     echo -e "\n##############################################\n"
     echo -e "${bleu}[ Installation des logiciels de base ]${neutre}"
-    apt install -y vim htop glances bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx gdb minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip tshark openssl keepassx gufw rename parted p7zip wireshark && echo -e "${vert} [ OK ] Logiciels de Bases Installés ${neutre}"
+    apt install -y vim htop glances bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx gdb minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip wireshark && echo -e "${vert} [ OK ] Logiciels de Bases Installés ${neutre}"
     sleep 2
 
     if [ $VERSION_OS = 'debian' ] ; then
@@ -98,7 +94,7 @@ function installbase() {
         echo -e "\n##############################################\n"
         echo -e "${bleu}[ Correction des erreurs au boot et à l'arrêt ]${neutre}"
         apt install -y libblockdev-mdraid2 libblockdev* apt-file 
-        apt install -y firmware-linux firmware-linux-free firmware-linux-nonfree && echo -e "${vert} [ OK ] Le firmware-linux-nonfree pour Debian Installés ${neutre}"
+        apt install -y firmware-linux firmware-linux-free firmware-linux-nonfree && echo -e "${vert} [ OK ] Le firmware-linux pour Debian Installés ${neutre}"
         update-initramfs -u -k all && echo -e "${vert} [ OK ] Correction des erreurs au boot et à l'arrêt effectué ${neutre}"
         sleep 2
     fi
@@ -111,7 +107,8 @@ function installbase() {
         sleep 2
     fi
 }
-    ######## CONFIGURATION DES APPLICATIONS
+
+######## CONFIGURATION DES APPLICATIONS
 
 function config() {
     # Wireshark
@@ -171,7 +168,6 @@ function config() {
         sleep 2
     fi
 
-    ######## COPIE DES FICHIERS DE CONF
     # Modif des droits TMUX
     echo -e "\n##############################################\n"
     echo -e "${bleu}[ Configuration de TMUX ]${neutre}"
@@ -188,7 +184,7 @@ function config() {
     sleep 2
 }
 
-    ######## ARCHITECTURE DOSSIER   TRAVAIL FORENSIC
+######## ARCHITECTURE DOSSIER   TRAVAIL FORENSIC
 
 function creerrepertoires() {
     #    Cas d'anlyse Windows
@@ -198,14 +194,14 @@ function creerrepertoires() {
     mkdir -p /cases/{w_01,w_02,w_03,w_04}/{firefoxHistory,pst/PJ_outlook,prefetch,malware,mft,dump,evtx,timeline,hivelist,network,filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil windows : /cases Configuré ${neutre}"
     mkdir -p /mnt/{usb1,usb2,win1,win2,linux1,linux2,encase1-E01,encase2-E01,ram1,ram2} && echo -e "${vert} [ OK ] accueil windows : /mnt Configuré ${neutre}"
 
-
     #    Cas d'analyse linux
     #   ----------------------
     mkdir -p /cases/{lx_01,lx_02,lx_03,lx_04}/{firefoxHistory,info_OS/{release,grub},cron,history/{cmd,viminfo},mail/{PJ_mail,},malware,dump,log,timeline,login_MDP,network/{ssh,},filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil linux : /cases Configuré ${neutre}"
     sleep 2
 }
 
-    ########  INSTALLER CLAMAV
+########  INSTALLER CLAMAV
+
 function claminst() {
     echo -e "\n##############################################\n"
     echo "Début de l'installation et des mises à jour :"
@@ -215,7 +211,8 @@ function claminst() {
     systemctl start clamav-freshclam.service && echo -e "${vert} [ OK ] Démarrage du service Clamav ${neutre}"
 }
 
-    ######## INSTALL GDB-PEDA
+######## INSTALL GDB-PEDA
+
 function gdbinst() {
     # GDB-PEDA pour user
     git clone https://github.com/longld/peda.git /home/$utilisateur/peda
@@ -226,11 +223,9 @@ function gdbinst() {
     echo "source /root/peda/peda.py" >> /root/.gdbinit  && echo -e "${vert} [ OK ] gdp-peda paramétré pour root ${neutre}"
 }
 
-    ######################## INSTALLATION DE VOLATILITY 2.6 OU 3 #####################################"
+######################## INSTALLATION DE VOLATILITY 2.6 OU 3 #####################################"
 
-
-
-    ########    INSTALLER VOLATILITY 2.6
+########    INSTALLER VOLATILITY 2.6
 
 function volat2() {
     echo -e "\n##############################################\n"
@@ -273,12 +268,13 @@ function volat2() {
     vol2.py --info
 }
         
-    ########    INSTALLER VOLATILITY 3
+########    INSTALLER VOLATILITY 3
 
 function volat3() {
     echo -e "\n##############################################\n"
     echo -e "${bleu}[ Installation de Volatility 3 ... ]${neutre}"
     sleep 2
+    
     # Préparation avant installation
     cd /home/$utilisateur/
     echo "Début de l'installation et des mises à jour de Volatility 3:"
@@ -312,11 +308,11 @@ function volat3() {
 }
 
 
-    ########    INSTALLER DES OUTILS REGRIPPER V3
+########    INSTALLER DES OUTILS REGRIPPER V3
 
 function reginst() {
     echo -e "\n##############################################\n"
-    cd /home/$utilisateur/Documents/Debian11-Post_Install/
+    cd $cheminInstall
     apt-get install -y git libparse-win32registry-perl -y
     
     # Téléchargement de RegRipper3.0 et déplacement des fichiers dans /usr/local/src/regripper
@@ -347,21 +343,21 @@ function reginst() {
     /usr/local/bin/rip.pl  && echo -e "${vert}\nrip.pl a été mis dans : /usr/local/bin/rip.pl !\n\nLe fichier d'origine se trouve dans : /usr/local/src/regripper/rip.pl\n\n${neutre}"
 }
 
-    ########    LES OUTILS DE BUREAUTIQUE
+########    LES OUTILS DE BUREAUTIQUE
 
 function burinst() {
     echo -e "\n##############################################\n"
     apt install -y libemail-outlook-message-perl pst-utils thunderbird  && echo -e "${vert} [ OK ] Outils Bureautique installés ${neutre}"
 }
 
-    ########    LES OUTILS DE DISQUES
+########    LES OUTILS DE DISQUES
 
 function diskinst() {
     echo -e "\n##############################################\n"
     apt install -y guymager qemu-utils libewf-dev ewf-tools hdparm sdparm && echo -e "${vert} [ OK ] Outils de disques installés ${neutre}"
 }
 
-    ########    QUELQUES LOGICIELS FORENSIC 
+########    QUELQUES LOGICIELS FORENSIC 
 
 function mftinst() {
     echo -e "\n##############################################\n"
@@ -378,74 +374,95 @@ function mftinst() {
     pip3 install windowsprefetch && echo -e "${vert} [ OK ] windowsprefetch installés ${neutre}"
     sleep 1
     # ShimCacheParser.py 
-    cd /home/$utilisateur/Documents/Debian11-Post_Install/
+    cd $cheminInstall
     unzip ./res/ShimCacheParser-master.zip 
     cp -r ShimCacheParser-master /home/$utilisateur/
     chmod -R 750 /home/$utilisateur/ShimCacheParser-master/ && echo -e "${vert} [ OK ] ShimCacheParser installé dans : /home/$utilisateur/ShimCacheParser-master/  ${neutre}"
     chown -R $utilisateur: /home/$utilisateur/ShimCacheParser-master/
 }
 
-    ########    FORENSICS-ALL
+########    FORENSICS-ALL
 
 function forall() {
     echo -e "\n##############################################\n"
     apt install -y forensics-all && echo -e "${vert} [ OK ] forensics-all installé ${neutre}"
 }
 
-
-    ########    FORENSICS-EXTRA
+########    FORENSICS-EXTRA
 
 function forextra() {
     echo -e "\n##############################################\n"
     apt install -y forensics-extra && echo -e "${vert} [ OK ] forensics-extra installé ${neutre}"
 }
 
-
-    ########    FORENSICS-EXTRA-GUI
+########    FORENSICS-EXTRA-GUI
 
 function forextragui() {
     echo -e "\n##############################################\n"
     apt install -y forensics-extra-gui && echo -e "${vert} [ OK ] forensics-extra-gui installé ${neutre}"
 }
 
-    ########    INSTALLATION DE VIRTUALBOX 6.1
+########    INSTALLATION DE VIRTUALBOX 6.1
 
 function vbox() {
     echo -e "\n##############################################\n"
-    # Téléchargement des clés
-    echo -e "${bleu}[ ---- Début d'installation et de configuration Virtualbox ---- ]${neutre}"
-    echo -e "${jaune}[ Téléchargement et ajout des clés publiques de virtualbox ]${neutre}"
-    wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
-    wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+    # Vérification que l'on est sur une machine physique
+    os=$(dmidecode | egrep -i '(version.*virt)' | awk -F " " '{print $2}')
+    if [ "$os" != "VirtualBox" ] ; then
+        
+        # Téléchargement des clés
+        echo -e "${bleu}[ ---- Début d'installation et de configuration Virtualbox ---- ]${neutre}"
+        echo -e "${jaune}[ Téléchargement et ajout des clés publiques de virtualbox ]${neutre}"
+        wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+        wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
 
-    # Modification de la source.list et mise à jour
-    echo -e "${jaune}[ Modification des source.list ]${neutre}"
-    if [ $VERSION_OS = 'ubuntu' ] ; then
-        add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
+        # Modification de la source.list et mise à jour
+        echo -e "${jaune}[ Modification des source.list ]${neutre}"
+        if [ $VERSION_OS = 'ubuntu' ] ; then
+            add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
+        fi
+        if [ $VERSION_OS = 'debian' ] ; then
+            echo "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" >> /etc/apt/sources.list
+        fi
+        apt update && apt -y full-upgrade
+
+        # Installation de virtualbox
+        echo -e "${jaune}[ Installation de virtualbox ]${neutre}"
+        apt install -y virtualbox-6.1 && echo -e "${vert} [ OK ] Virtualbox $vboxVersion installé ${neutre}"
+
+        # Installation de l'Extension Pack
+        vboxVersion=$(dpkg -l | grep -i virtualbox | awk -F " " '{print $3}' | egrep -o '([0-9]{1}\.){2}[0-9]{1,3}')
+        echo -e "${jaune}[ Installation de l'extension Pack ]${neutre}"
+        wget https://download.virtualbox.org/virtualbox/$vboxVersion/Oracle_VM_VirtualBox_Extension_Pack-$vboxVersion.vbox-extpack
+        VBoxManage extpack install Oracle_VM_VirtualBox_Extension_Pack-$vboxVersion.vbox-extpack && echo -e "${vert} [ OK ] Extension Pack de Virtualbox $vboxVersion installée ${neutre}"
+
+        # Configuration pour pouvoir utiliser l'USB
+        echo -e "${jaune}[ Configuration de Virtualbox pour utiliser les clés USB ]${neutre}"
+        usermod -aG vboxusers $utilisateur && echo -e "${vert} [ OK ] Utilisation de l'USB configuré ${neutre}"
+
+        # Configuration pour le démarrage sur clé USB
+        usermod -aG disk $utilisateur && echo -e "${vert} [ OK ] Configuration pour démarrage sur clé USB configuré ${neutre}"
+        echo -e "${vert}[ ---- Fin d'installation et de configuration Virtualbox ---- ]${neutre}"
+    else
+        echo -e "${rouge}Vous êtes sur une machine virtuelle, pas d'installation${neutre}"
     fi
-    if [ $VERSION_OS = 'debian' ] ; then
-        echo "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" >> /etc/apt/sources.list
-    fi
-    apt update && apt -y full-upgrade
-
-    # Installation de virtualbox
-    echo -e "${jaune}[ Installation de virtualbox ]${neutre}"
-    apt install -y virtualbox-6.1 && echo -e "${vert} [ OK ] Virtualbox $vboxVersion installé ${neutre}"
-
-    # Installation de l'Extension Pack
-    vboxVersion=$(dpkg -l | grep -i virtualbox | awk -F " " '{print $3}' | egrep -o '([0-9]{1}\.){2}[0-9]{1,3}')
-    echo -e "${jaune}[ Installation de l'extension Pack ]${neutre}"
-    wget https://download.virtualbox.org/virtualbox/$vboxVersion/Oracle_VM_VirtualBox_Extension_Pack-$vboxVersion.vbox-extpack
-    VBoxManage extpack install Oracle_VM_VirtualBox_Extension_Pack-$vboxVersion.vbox-extpack && echo -e "${vert} [ OK ] Extension Pack de Virtualbox $vboxVersion installée ${neutre}"
-
-    # Configuration pour pouvoir utiliser l'USB
-    echo -e "${jaune}[ Configuration de Virtualbox pour utiliser les clés USB ]${neutre}"
-    usermod -aG vboxusers $utilisateur && echo -e "${vert} [ OK ] Utilisation de l'USB configuré ${neutre}"
-
-    # Configuration pour le démarrage sur clé USB
-    usermod -aG disk $utilisateur && echo -e "${vert} [ OK ] Configuration pour démarrage sur clé USB configuré ${neutre}"
-    echo -e "${vert}[ ---- Fin d'installation et de configuration Virtualbox ---- ]${neutre}"
 }
+
+######## VALIDATION DES CHANGEMENTS ###########################################################
+
+function validChang() {
+    echo -e "\n${rouge}Voulez-vous redemérrer maintenant pour valider tous les changements ? ( y / n )${neutre}"
+    read REBOOT
+
+    if [ "$REBOOT" = "y" ] ; then
+        reboot
+    else
+        echo -e "${violet}Il faudra redémarrer avant d'utiliser les applications${neutre}"
+        echo -e "${violet}Retour au manu dans 4 secondes...${neutre}"
+        sleep 4
+    fi
+}
+
 
 ######## MENU ###########################################################
 
@@ -500,9 +517,9 @@ echo " "
     "6")
         gdbinst ;;
     "7")
-        volat2 ;;
+        volat2 ; validChang ;;
     "8")
-        volat3 ;;
+        volat3 ; validChang ;;
     "9")
         reginst ;;
     "10")
@@ -528,7 +545,7 @@ echo " "
 done
 
 
-########    FINALISATION
+########    FINALISATION    ###########################################################
 
 chmod -R 750 /home/$utilisateur/
 chown -R $utilisateur: /home/$utilisateur/
