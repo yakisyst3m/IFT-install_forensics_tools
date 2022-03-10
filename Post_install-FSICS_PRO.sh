@@ -10,6 +10,7 @@
 # 2022 03 07    v2.1-1 Modif ShimCacheParser.py
 # 2022 03 07    v2.1-2 Modif nommage volatility : vol2.py pour volatility 2.6 / vol3.py pour volatility 3
 # 2022 03 09    v2.1-3 Correctif chemins + python3 + fcontion validchg
+# 2022 03 10    v2.1-4 Modif install wireshark + extpackVbox + formatage du mode verbeux
 
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
@@ -38,7 +39,7 @@ utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
     ######## version os DEBIAN ####################################################
 function mjour() {
     if [ $VERSION_OS = 'debian' ] ; then
-        echo -e "${bleu}[ Mise à jour de source.list de Debian ]${neutre}"
+        echo -e "\n${bleu}[ ---- Mise à jour de source.list de Debian ---- ]${neutre}\n"
         echo "deb http://deb.debian.org/debian/ bullseye main non-free contrib" > /etc/apt/sources.list
         echo "deb-src http://deb.debian.org/debian/ bullseye main non-free contrib" >> /etc/apt/sources.list
         echo "deb http://security.debian.org/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list
@@ -63,7 +64,7 @@ function mjour() {
                       
     ######## version os UBUNTU ############################################################"
     elif [ $VERSION_OS = 'ubuntu' ] ; then
-        echo -e "${bleu}[ Mise à jour de source.list de Ubuntu ]${neutre}"
+        echo -e "\n${bleu}[ ---- Mise à jour de source.list de Ubuntu ---- ]${neutre}\n"
         echo "deb http://fr.archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse"  > /etc/apt/sources.list
         echo "deb http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse"  >> /etc/apt/sources.list
         echo "deb http://fr.archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse"  >> /etc/apt/sources.list
@@ -85,8 +86,12 @@ function mjour() {
 
 function installbase() {
     echo -e "\n##############################################\n"
-    echo -e "${bleu}[ Installation des logiciels de base ]${neutre}"
-    apt install -y vim htop glances bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx gdb minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip wireshark && echo -e "${vert} [ OK ] Logiciels de Bases Installés ${neutre}"
+    echo -e "\n${bleu}[ ---- Installation des logiciels de base ---- ]${neutre}\n"
+    apt install -y vim htop glances bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx gdb minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip 
+    
+    # Installation de Wireshark de façon non-intéractive
+    echo "wireshark-common wireshark-common/install-setuid boolean true" | debconf-set-selections
+    DEBIAN_FRONTEND=noninteractive apt-get -y install wireshark && echo -e "${vert} [ OK ] Logiciels de Bases Installés ${neutre}"
     sleep 2
 
     if [ $VERSION_OS = 'debian' ] ; then
@@ -113,7 +118,7 @@ function installbase() {
 function config() {
     # Wireshark
     echo -e "\n##############################################\n"
-    echo -e "${bleu}[ Configuration de WIRESHARK ]${neutre}"
+    echo -e "\n${bleu}[ ---- Configuration de wireshark ---- ]${neutre}\n"
     usermod -aG wireshark $utilisateur
     chgrp wireshark /usr/bin/dumpcap
     chmod 750 /usr/bin/dumpcap
@@ -122,7 +127,7 @@ function config() {
 
     # Désactivation IPv6
     echo -e "\n##############################################\n"
-    echo -e "${bleu}[ Désactivation de l'IPv6 ]${neutre}"
+    echo -e "\n${bleu}[ ---- Désactivation de l'IPv6 ---- ]${neutre}\n"
 
     if [ "grep -q 'net.ipv6.conf.all.disable_ipv6' /etc/sysctl.conf" ] ; then # si la ligne existe / -q pour mode silencieux, ne note rien à l'écran
         sed -ri 's/(net\.ipv6\.conf\.all\.disable_ipv6=0|#net\.ipv6\.conf\.all\.disable_ipv6=0|#net\.ipv6\.conf\.all\.disable_ipv6=1)/net\.ipv6\.conf\.all\.disable_ipv6=1/g' /etc/sysctl.conf  && echo -e "${vert} [ OK ] net.ipv6.conf.all.disable_ipv6=1 : paramétré ${neutre}"
@@ -154,7 +159,7 @@ function config() {
     # Pavé numérique
     if [ -d $GESTCONNECTION ] ; then # Debian Mate avec lightdm
         echo -e "\n##############################################\n"
-        echo -e "${bleu}[ Configuration du pavé numérique ]${neutre}"
+        echo -e "\n${bleu}[ ---- Configuration du pavé numérique ---- ]${neutre}\n"
         sed -i '/\[Seat:\*\]/a greeter-setup-script=/usr/bin/numlockx on' /etc/lightdm/lightdm.conf
         echo "NUMLOCK=on" > /etc/default/numlockx
         grep -q "NUMLOCK=on" /etc/default/numlockx && echo -e "${vert} [ OK ] installé et paramétré pour lightdm ${neutre}"
@@ -163,14 +168,14 @@ function config() {
 
     if [ $VERSION_OS = 'ubuntu' ] ; then # Ubuntu avec GDM3
         echo -e "\n##############################################\n"
-        echo -e "${bleu}[ Configuration du pavé numérique ]${neutre}"
+        echo -e "\n${bleu}[ ---- Configuration du pavé numérique ---- ]${neutre}\n"
         sed -i '/exit 0/i \if [ -x /usr/bin/numlockx ]; then\nexec /usr/bin/numlockx on\nfi' /etc/gdm3/Init/Default && echo -e "${vert} [ OK ] installé et paramétré pour gdm3 Ubuntu ${neutre}"
         sleep 2
     fi
 
     # Modif des droits TMUX
     echo -e "\n##############################################\n"
-    echo -e "${bleu}[ Configuration de TMUX ]${neutre}"
+    echo -e "\n${bleu}[ ---- Configuration de TMUX ---- ]${neutre}\n"
     cp ./res/.tmux.conf /home/$utilisateur/
     cp ./res/.tmux.conf /root/
 
@@ -179,7 +184,7 @@ function config() {
 
     # Conf vim
     echo -e "\n##############################################\n"
-    echo -e "${bleu}[ Configuration de VIM ]${neutre}"
+    echo -e "\n${bleu}[ ---- Configuration de VIM ---- ]${neutre}\n"
     echo -e "syntax on\nset number\nset autoindent\nset tabstop=6\nset showmode\nset mouse=a" >> /etc/vim/vimrc && echo -e "${vert} [ OK ] VIM Configuré ${neutre}"
     sleep 2
 }
@@ -190,7 +195,7 @@ function creerrepertoires() {
     #    Cas d'anlyse Windows
     #   ----------------------
     echo -e "\n##############################################\n"
-    echo -e "${bleu}[ Création des dossiers qui contiendront les points de montages des disques, RAM, Artefacts Windows et Linux ]${neutre}"
+    echo -e "\n${bleu}[ ---- Création des dossiers qui contiendront les points de montages des disques, RAM, Artefacts Windows et Linux ---- ]${neutre}\n"
     mkdir -p /cases/{w_01,w_02,w_03,w_04}/{firefoxHistory,pst/PJ_outlook,prefetch,malware,mft,dump,evtx,timeline,hivelist,network,filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil windows : /cases Configuré ${neutre}"
     mkdir -p /mnt/{usb1,usb2,win1,win2,linux1,linux2,encase1-E01,encase2-E01,ram1,ram2} && echo -e "${vert} [ OK ] accueil windows : /mnt Configuré ${neutre}"
 
@@ -204,7 +209,7 @@ function creerrepertoires() {
 
 function claminst() {
     echo -e "\n##############################################\n"
-    echo "Début de l'installation et des mises à jour :"
+    echo -e "\n${bleu}[ ---- Début d'installation de clamav ---- ]${neutre}\n"
     apt install -y clamav && echo -e "${vert} [ OK ] Clamav installé ${neutre}"
     systemctl stop clamav-freshclam.service && echo -e "${vert} [ OK ] Arrêt du service Clamav ${neutre}"
     freshclam && echo -e "${vert} [ OK ] Mise à jour du service Clamav ${neutre}"
@@ -215,6 +220,7 @@ function claminst() {
 
 function gdbinst() {
     # GDB-PEDA pour user
+    echo -e "\n${bleu}[ ---- Début d'installation de gdb-peda ---- ]${neutre}\n"
     git clone https://github.com/longld/peda.git /home/$utilisateur/peda
     echo "source /home/$utilisateur/peda/peda.py" >> /home/$utilisateur/.gdbinit  && echo -e "${vert} [ OK ] gdp-peda paramétré pour $utilisateur ${neutre}"
 
@@ -229,7 +235,7 @@ function gdbinst() {
 
 function volat2() {
     echo -e "\n##############################################\n"
-    echo -e "${bleu}[ Installation de Volatility 2.6 ... ]${neutre}"
+    echo -e "\n${bleu}[ ---- Début d'installation de Volatility 2.6 ---- ]${neutre}\n"
     sleep 2
     # Préparation avant installation
     cd /home/$utilisateur/Documents/
@@ -272,7 +278,7 @@ function volat2() {
 
 function volat3() {
     echo -e "\n##############################################\n"
-    echo -e "${bleu}[ Installation de Volatility 3 ... ]${neutre}"
+    echo -e "\n${bleu}[ ---- Début d'installation de Volatility 3 ---- ]${neutre}\n"
     sleep 2
     
     # Préparation avant installation
@@ -312,6 +318,7 @@ function volat3() {
 
 function reginst() {
     echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de Regripper V3.0 ---- ]${neutre}\n"
     cd $cheminInstall
     apt-get install -y git libparse-win32registry-perl -y
     
@@ -347,6 +354,7 @@ function reginst() {
 
 function burinst() {
     echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation des outils de bureautique ---- ]${neutre}\n"
     apt install -y libemail-outlook-message-perl pst-utils thunderbird  && echo -e "${vert} [ OK ] Outils Bureautique installés ${neutre}"
 }
 
@@ -354,6 +362,7 @@ function burinst() {
 
 function diskinst() {
     echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation des outils de disque ---- ]${neutre}\n"
     apt install -y guymager qemu-utils libewf-dev ewf-tools hdparm sdparm && echo -e "${vert} [ OK ] Outils de disques installés ${neutre}"
 }
 
@@ -362,18 +371,23 @@ function diskinst() {
 function mftinst() {
     echo -e "\n##############################################\n"
     # olevba3 # analyzeMFT.py
+    echo -e "\n${bleu}[ ---- Début d'installation de oletools analyzeMFT ---- ]${neutre}\n"
     pip install oletools analyzeMFT && echo -e "${vert} [ OK ] oletools analyzeMFT installés ${neutre}"
     sleep 1
     # getfattr # ewfacquire ...
+    echo -e "\n${bleu}[ ---- Début d'installation de pff-tools ewf-tools libewf-dev libewf2 attr ---- ]${neutre}\n"
     apt install -y pff-tools ewf-tools libewf-dev libewf2 attr && echo -e "${vert} [ OK ] pff-tools ewf-tools libewf-dev libewf2 attr installés ${neutre}"
     sleep 1
     # Suite plaso : # log2timeline.py # psort.py # psteal.py
+    echo -e "\n${bleu}[ ---- Début d'installation de la suite plaso ---- ]${neutre}\n"
     apt install -y plaso && echo -e "${vert} [ OK ] Suite plaso installés ${neutre}"
     sleep 1
     # prefetch.py
+    echo -e "\n${bleu}[ ---- Début d'installation de windowsprefetch ---- ]${neutre}\n"
     pip3 install windowsprefetch && echo -e "${vert} [ OK ] windowsprefetch installés ${neutre}"
     sleep 1
     # ShimCacheParser.py 
+    echo -e "\n${bleu}[ ---- Début d'installation de ShimCacheParser.py ---- ]${neutre}\n"
     cd $cheminInstall
     unzip ./res/ShimCacheParser-master.zip 
     cp -r ShimCacheParser-master /home/$utilisateur/
@@ -385,6 +399,7 @@ function mftinst() {
 
 function forall() {
     echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de FORENSICS-ALL ---- ]${neutre}\n"
     apt install -y forensics-all && echo -e "${vert} [ OK ] forensics-all installé ${neutre}"
 }
 
@@ -392,6 +407,7 @@ function forall() {
 
 function forextra() {
     echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de FORENSICS-EXTRA ---- ]${neutre}\n"
     apt install -y forensics-extra && echo -e "${vert} [ OK ] forensics-extra installé ${neutre}"
 }
 
@@ -399,6 +415,7 @@ function forextra() {
 
 function forextragui() {
     echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de FORENSICS-EXTRA-GUI ---- ]${neutre}\n"
     apt install -y forensics-extra-gui && echo -e "${vert} [ OK ] forensics-extra-gui installé ${neutre}"
 }
 
@@ -411,7 +428,7 @@ function vbox() {
     if [ "$os" != "VirtualBox" ] ; then
         
         # Téléchargement des clés
-        echo -e "${bleu}[ ---- Début d'installation et de configuration Virtualbox ---- ]${neutre}"
+        echo -e "\n${bleu}[ ---- Début d'installation et de configuration Virtualbox ---- ]${neutre}\n"
         echo -e "${jaune}[ Téléchargement et ajout des clés publiques de virtualbox ]${neutre}"
         wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
         wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
@@ -430,11 +447,13 @@ function vbox() {
         echo -e "${jaune}[ Installation de virtualbox ]${neutre}"
         apt install -y virtualbox-6.1 && echo -e "${vert} [ OK ] Virtualbox $vboxVersion installé ${neutre}"
 
-        # Installation de l'Extension Pack
+        # Téléchargement de l'Extension Pack
         vboxVersion=$(dpkg -l | grep -i virtualbox | awk -F " " '{print $3}' | egrep -o '([0-9]{1}\.){2}[0-9]{1,3}')
         echo -e "${jaune}[ Installation de l'extension Pack ]${neutre}"
         wget https://download.virtualbox.org/virtualbox/$vboxVersion/Oracle_VM_VirtualBox_Extension_Pack-$vboxVersion.vbox-extpack
-        VBoxManage extpack install Oracle_VM_VirtualBox_Extension_Pack-$vboxVersion.vbox-extpack && echo -e "${vert} [ OK ] Extension Pack de Virtualbox $vboxVersion installée ${neutre}"
+        
+        # Installation de l'Extension Pack + acceptation licence
+        echo ${ACCEPT_ORACLE_EXTPACK_LICENSE:='y'} | VBoxManage extpack install "Oracle_VM_VirtualBox_Extension_Pack-$vboxVersion.vbox-extpack" && echo -e "${vert} [ OK ] Extension Pack de Virtualbox $vboxVersion installée ${neutre}"
 
         # Configuration pour pouvoir utiliser l'USB
         echo -e "${jaune}[ Configuration de Virtualbox pour utiliser les clés USB ]${neutre}"
@@ -498,8 +517,10 @@ echo " "
     echo -e "[ ${bleu}16${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
     echo -e "[ ${violet}17${neutre} ] - Tout installer"
     echo
-    echo -e "[  ${rouge}F${neutre} ] - Taper F pour finaliser l'installation...\n"
-    echo -e "[  ${rouge}Q${neutre} ] - Taper Q pour quitter...\n"
+    echo -e "[  ${rouge}F${neutre} ] - Taper F pour finaliser l'installation..."
+    echo -e "        ---> Dans tous les cas, une fois vos installations choisies, terminer par l'option [ F ]\n"
+    echo
+    echo -e "${rouge}[  Q ] - Taper Q pour quitter...${neutre}\n"
     read -p "Entrer votre choix : " INSTALL;
     echo
 
