@@ -11,28 +11,46 @@
 # 2022 03 07    v2.1-2 Modif nommage volatility : vol2.py pour volatility 2.6 / vol3.py pour volatility 3
 # 2022 03 09    v2.1-3 Correctif chemins + python3 + fcontion validchg
 # 2022 03 10    v2.1-4 Modif install wireshark + extpackVbox + formatage du mode verbeux
+# 2022 03 16    v2.1-5 Correction volatility 3 table des symbols windows + fonction décompte + modif fct IPv6
 
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 # VARIABLES : LES VERSIONS / CHEMINS / COULEURS
 
-VERSION_OS=$(egrep '^ID=' /etc/os-release | cut -d "=" -f2)
-ENVBUREAU="/etc/mate/"
-GESTCONNECTION="/etc/lightdm/"
-cheminInstall="/home/$utilisateur/Documents/Linux-Post_Install/"
+    VERSION_OS=$(egrep '^ID=' /etc/os-release | cut -d "=" -f2)
+    ENVBUREAU="/etc/mate/"
+    GESTCONNECTION="/etc/lightdm/"
+    cheminInstall="/home/$utilisateur/Documents/Linux-Post_Install/"
 
-rouge='\e[1;31m'
-vert='\e[1;32m'
-jaune='\e[1;33m'
-bleu='\e[1;34m' 
-violet='\e[1;35m'
-neutre='\e[0;m'
-
+    ETHNAME=$(ip a | grep "2: en" | tr " " ":" | awk -F ":" '{print $3}')
+    ETHCHEMIN="/etc/sysconfig/network-scripts/ifcfg-$ETHNAME"
+    ETHUUID=$(nmcli con show | grep eth | awk -F " " '{print $2}')
+    
+    SYSCTL="/etc/sysctl.conf"
+    rouge='\e[1;31m'
+    vert='\e[1;32m'
+    jaune='\e[1;33m'
+    bleu='\e[1;34m' 
+    violet='\e[1;35m'
+    neutre='\e[0;m'
+    bleufondjaune='\e[7;44m\e[1;33m'
 
 ######## PREPARATION ###########################################################
 
 utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
 
+######## DECOMPTE ###########################################################
+
+decompte() {
+    i=$1
+    echo " "
+    while [[ $i -ge 0 ]] ; do
+            echo -e "${rouge}\r "$i secondes" \c ${neutre}"
+            sleep 1
+            i=$(expr $i - 1)
+    done
+    echo -e "\n${vert} Fin du décompte ${neutre}"
+}
 
 ######## MODIFICATION DES SOURCE.LIST ####################################################
 
@@ -60,7 +78,7 @@ function mjour() {
             sed -i '/\[Manager]/a DefaultTimeoutStartSec=20s' /etc/systemd/system.conf 
             sed -i '/\[Manager]/a DefaultTimeoutStopSec=20s' /etc/systemd/system.conf && echo -e "${vert} [ OK ] Correction des erreurs au boot et à l'arrêt effectué ${neutre}"
         fi
-        sleep 2
+        decompte 2
                       
     ######## version os UBUNTU ############################################################"
     elif [ $VERSION_OS = 'ubuntu' ] ; then
@@ -74,7 +92,7 @@ function mjour() {
         echo "deb http://fr.archive.ubuntu.com/ubuntu/ focal-backports main restricted universe multiverse"  >> /etc/apt/sources.list
 
         apt update && apt upgrade -y && echo -e "${vert} [ OK ] Système à jour ${neutre}"
-        sleep 2
+        decompte 2
     else
         echo -e "${rouge}Le système d'exploitation n'est ni une distribution Debian, ni une distribution unbuntu : [ Fin de l'installation ]${neutre}"
         exit
@@ -92,7 +110,7 @@ function installbase() {
     # Installation de Wireshark de façon non-intéractive
     echo "wireshark-common wireshark-common/install-setuid boolean true" | debconf-set-selections
     DEBIAN_FRONTEND=noninteractive apt-get -y install wireshark && echo -e "${vert} [ OK ] Logiciels de Bases Installés ${neutre}"
-    sleep 2
+    decompte 2
 
     if [ $VERSION_OS = 'debian' ] ; then
         ## Corrections kernel Debian 11
@@ -101,15 +119,15 @@ function installbase() {
         apt install -y libblockdev-mdraid2 libblockdev* apt-file 
         apt install -y firmware-linux firmware-linux-free firmware-linux-nonfree && echo -e "${vert} [ OK ] Le firmware-linux pour Debian Installés ${neutre}"
         update-initramfs -u -k all && echo -e "${vert} [ OK ] Correction des erreurs au boot et à l'arrêt effectué ${neutre}"
-        sleep 2
+        decompte 2
     fi
 
     cp res/gufw.service /etc/systemd/system/ && echo -e "${vert} [ OK ] Firewall Gufw service en place à l'emplacement : /etc/systemd/system/${neutre}"
-    sleep 2
+    decompte 2
 
     if [ -d $ENVBUREAU ] ; then
         apt install -y caja-open-terminal mate-desktop-environment-extras  && echo -e "${vert} [ OK ] Outils d'environnement de Bureau Mate installés${neutre}"
-        sleep 2
+        decompte 2
     fi
 }
 
@@ -123,38 +141,45 @@ function config() {
     chgrp wireshark /usr/bin/dumpcap
     chmod 750 /usr/bin/dumpcap
     setcap cap_net_raw,cap_net_admin=eip /usr/bin/dumpcap && echo -e "${vert} [ OK ] Wireshark configuré ${neutre}" || echo -e "${rouge} [ NOK ] Résoudre le problème ${neutre}"
-    sleep 2
+    decompte 2
 
     # Désactivation IPv6
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Désactivation de l'IPv6 ---- ]${neutre}\n"
 
-    if [ "grep -q 'net.ipv6.conf.all.disable_ipv6' /etc/sysctl.conf" ] ; then # si la ligne existe / -q pour mode silencieux, ne note rien à l'écran
-        sed -ri 's/(net\.ipv6\.conf\.all\.disable_ipv6=0|#net\.ipv6\.conf\.all\.disable_ipv6=0|#net\.ipv6\.conf\.all\.disable_ipv6=1)/net\.ipv6\.conf\.all\.disable_ipv6=1/g' /etc/sysctl.conf  && echo -e "${vert} [ OK ] net.ipv6.conf.all.disable_ipv6=1 : paramétré ${neutre}"
+    sed -ri  "s/^IPV6/#IPV6/g" $ETHCHEMIN && echo -e "${vert} [ OK ] Ligne IPV6 désactivées dans le fichier $ETHCHEMIN ${neutre}"
+
+    grep -q 'net.ipv6.conf.all.disable_ipv6' $SYSCTL
+    if [ "$?" = "0" ] ; then # si la ligne existe / -q pour mode silencieux, ne note rien à l'écran
+        sed -ri 's/^(|#)net\.ipv6\.conf\.all\.disable_ipv6=(0|1|)/net\.ipv6\.conf\.all\.disable_ipv6=1/g' $SYSCTL  && echo -e "${vert} [ OK ] net.ipv6.conf.all.disable_ipv6=1 : paramétré ${neutre}"
     else 
-        echo "net.ipv6.conf.all.disable_ipv6=1" >> /etc/sysctl.conf
+        echo "net.ipv6.conf.all.disable_ipv6=1" >> $SYSCTL && echo -e "${vert} [ OK ] net.ipv6.conf.all.disable_ipv6=1 : paramétré ${neutre}"
     fi
 
-    if [ "grep -q 'net.ipv6.conf.all.autoconf' /etc/sysctl.conf" ] ; then 
-        sed -ri 's/(net\.ipv6\.conf\.all\.autoconf=1|#net\.ipv6\.conf\.all\.autoconf=1|#net\.ipv6\.conf\.all\.autoconf=0)/net\.ipv6\.conf\.all\.autoconf=0/g' /etc/sysctl.conf  && echo -e "${vert} [ OK ] net.ipv6.conf.all.autoconf=0 : paramétré ${neutre}"
+    grep -q 'net.ipv6.conf.all.autoconf' $SYSCTL
+    if [ "$?" = "0" ] ; then 
+        sed -ri 's/^(|#)net\.ipv6\.conf\.all\.autoconf=(0|1|)/net\.ipv6\.conf\.all\.autoconf=0/g' $SYSCTL  && echo -e "${vert} [ OK ] net.ipv6.conf.all.autoconf=0 : paramétré ${neutre}"
     else
-        echo "net.ipv6.conf.all.autoconf=0" >> /etc/sysctl.conf
+        echo "net.ipv6.conf.all.autoconf=0" >> $SYSCTL  && echo -e "${vert} [ OK ] net.ipv6.conf.all.autoconf=0 : paramétré ${neutre}"
     fi
 
-    if [ "grep -q 'net.ipv6.conf.default.disable_ipv6' /etc/sysctl.conf" ] ; then
-        sed -ri 's/(net\.ipv6\.conf\.default\.disable_ipv6=0|#net\.ipv6\.conf\.default\.disable_ipv6=0|#net\.ipv6\.conf\.default\.disable_ipv6=1)/net\.ipv6\.conf\.default\.disable_ipv6=1/g' /etc/sysctl.conf  && echo -e "${vert} [ OK ] net.ipv6.conf.default.disable_ipv6=1 : paramétré ${neutre}"
+    grep -q 'net.ipv6.conf.default.disable_ipv6' $SYSCTL
+    if [ "$?" = "0" ] ; then
+        sed -ri 's/^(|#)net\.ipv6\.conf\.default\.disable_ipv6=(0|1|)/net\.ipv6\.conf\.default\.disable_ipv6=1/g' $SYSCTL  && echo -e "${vert} [ OK ] net.ipv6.conf.default.disable_ipv6=1 : paramétré ${neutre}"
     else
-        echo "net.ipv6.conf.default.disable_ipv6=1" >> /etc/sysctl.conf
+        echo "net.ipv6.conf.default.disable_ipv6=1" >> $SYSCTL  && echo -e "${vert} [ OK ] net.ipv6.conf.default.disable_ipv6=1 : paramétré ${neutre}"
     fi
 
-    if [ "grep -q 'net.ipv6.conf.default.autoconf' /etc/sysctl.conf" ] ; then
-        sed -ri 's/(net\.ipv6\.conf\.default\.autoconf=1|#net\.ipv6\.conf\.default\.autoconf=1|#net\.ipv6\.conf\.default\.autoconf=0)/net\.ipv6\.conf\.default\.autoconf=0/g' /etc/sysctl.conf  && echo -e "${vert} [ OK ] net.ipv6.conf.default.autoconf=0 : paramétré ${neutre}"
+    grep -q 'net.ipv6.conf.default.autoconf' $SYSCTL
+    if [ "$?" = "0" ] ; then
+        sed -ri 's/^(|#)net\.ipv6\.conf\.default\.autoconf=(0|1|)/net\.ipv6\.conf\.default\.autoconf=0/g' $SYSCTL  && echo -e "${vert} [ OK ] net.ipv6.conf.default.autoconf=0 : paramétré ${neutre}"
     else
-        echo "net.ipv6.conf.default.autoconf=0" >> /etc/sysctl.conf
+        echo "net.ipv6.conf.default.autoconf=0" >> $SYSCTL  && echo -e "${vert} [ OK ] net.ipv6.conf.default.autoconf=0 : paramétré ${neutre}"
     fi
+    echo -e "\n${bleufondjaune}Validation de la configuration${neutre}\n"
 
     sysctl -p
-    sleep 2
+    decompte 2
 
     # Pavé numérique
     if [ -d $GESTCONNECTION ] ; then # Debian Mate avec lightdm
@@ -163,14 +188,14 @@ function config() {
         sed -i '/\[Seat:\*\]/a greeter-setup-script=/usr/bin/numlockx on' /etc/lightdm/lightdm.conf
         echo "NUMLOCK=on" > /etc/default/numlockx
         grep -q "NUMLOCK=on" /etc/default/numlockx && echo -e "${vert} [ OK ] installé et paramétré pour lightdm ${neutre}"
-        sleep 2
+        decompte 2
     fi
 
     if [ $VERSION_OS = 'ubuntu' ] ; then # Ubuntu avec GDM3
         echo -e "\n##############################################\n"
         echo -e "\n${bleu}[ ---- Configuration du pavé numérique ---- ]${neutre}\n"
         sed -i '/exit 0/i \if [ -x /usr/bin/numlockx ]; then\nexec /usr/bin/numlockx on\nfi' /etc/gdm3/Init/Default && echo -e "${vert} [ OK ] installé et paramétré pour gdm3 Ubuntu ${neutre}"
-        sleep 2
+        decompte 2
     fi
 
     # Modif des droits TMUX
@@ -180,13 +205,13 @@ function config() {
     cp ./res/.tmux.conf /root/
 
     chown $utilisateur: /home/$utilisateur/.tmux.conf && echo -e "${vert} [ OK ] TMUX Configuré ${neutre}"
-    sleep 2
+    decompte 2
 
     # Conf vim
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Configuration de VIM ---- ]${neutre}\n"
     echo -e "syntax on\nset number\nset autoindent\nset tabstop=6\nset showmode\nset mouse=a" >> /etc/vim/vimrc && echo -e "${vert} [ OK ] VIM Configuré ${neutre}"
-    sleep 2
+    decompte 2
 }
 
 ######## ARCHITECTURE DOSSIER   TRAVAIL FORENSIC
@@ -236,13 +261,13 @@ function gdbinst() {
 function volat2() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de Volatility 2.6 ---- ]${neutre}\n"
-    sleep 2
+    decompte 2
     # Préparation avant installation
     cd /home/$utilisateur/Documents/
     echo "Début de l'installation et des mises à jour de Volatility 2.6 :"
     echo "Installation des librairies"
     apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 2.6 installés ${neutre}"
-    sleep 1
+    decompte 1
     
     # Installation de python 2
     echo "Installation des outils python 2"
@@ -250,17 +275,17 @@ function volat2() {
     curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
     python2 get-pip.py
     python2 -m pip install -U setuptools wheel  && echo -e "${vert} [ OK ] Outils python pour Volatility 2.6 installés ${neutre}"
-    sleep 1
+    decompte 1
     
     # Installation des modules volatility
     echo "Install des dépendences"
     python2 -m pip install -U distorm3 yara pycrypto pillow openpyxl ujson pytz ipython capstone
     ln -s /usr/local/lib/python2.7/dist-packages/usr/lib/libyara.so /usr/lib/libyara.so  && echo -e "${vert} [ OK ] Dépendences de Volatility 2.6 installés ${neutre}"
-    sleep 1
+    decompte 1
     
     # Téléchargement et Installation de volatility 2.6
     python2 -m pip install -U git+https://github.com/volatilityfoundation/volatility.git  && echo -e "${vert} [ OK ] Volatility 2.6 installé ${neutre}"
-    sleep 1
+    decompte 1
     
     # Renommage de fichier
     mv /usr/local/bin/vol.py /usr/local/bin/vol2.py
@@ -279,14 +304,14 @@ function volat2() {
 function volat3() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de Volatility 3 ---- ]${neutre}\n"
-    sleep 2
+    decompte 2
     
     # Préparation avant installation
     cd /home/$utilisateur/
     echo "Début de l'installation et des mises à jour de Volatility 3:"
     echo "Installation des librairies"
     apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 3 installés ${neutre}"
-    sleep 1
+    decompte 1
 
     # Installation de python 3
     echo "Installation des outils python 3"
@@ -295,10 +320,13 @@ function volat3() {
     # Téléchargement et Installation de volatility 3function volat2() {
     git clone https://github.com/volatilityfoundation/volatility3.git
     mv volatility3 /home/$utilisateur/.volatility3
+    cd /home/$utilisateur/.volatility3/volatility3/symbols/
+    wget https://downloads.volatilityfoundation.org/volatility3/symbols/windows.zip
+    unzip windows.zip
     cd /home/$utilisateur/.volatility3
     mv vol.py vol3.py
-    chmod -R 750 *
-    chown -R $utilisateur: * && echo -e "${vert} [ OK ] Volatility 3 téléchargé ${neutre}"
+    chmod -R 750 ../.volatility3/
+    chown -R $utilisateur: ../.volatility3/ && echo -e "${vert} [ OK ] Volatility 3 téléchargé ${neutre}"
     
     # Installation des modules volatility
     pip3 install -r requirements.txt
@@ -373,19 +401,19 @@ function mftinst() {
     # olevba3 # analyzeMFT.py
     echo -e "\n${bleu}[ ---- Début d'installation de oletools analyzeMFT ---- ]${neutre}\n"
     pip install oletools analyzeMFT && echo -e "${vert} [ OK ] oletools analyzeMFT installés ${neutre}"
-    sleep 1
+    decompte 1
     # getfattr # ewfacquire ...
     echo -e "\n${bleu}[ ---- Début d'installation de pff-tools ewf-tools libewf-dev libewf2 attr ---- ]${neutre}\n"
     apt install -y pff-tools ewf-tools libewf-dev libewf2 attr && echo -e "${vert} [ OK ] pff-tools ewf-tools libewf-dev libewf2 attr installés ${neutre}"
-    sleep 1
+    decompte 1
     # Suite plaso : # log2timeline.py # psort.py # psteal.py
     echo -e "\n${bleu}[ ---- Début d'installation de la suite plaso ---- ]${neutre}\n"
     apt install -y plaso && echo -e "${vert} [ OK ] Suite plaso installés ${neutre}"
-    sleep 1
+    decompte 1
     # prefetch.py
     echo -e "\n${bleu}[ ---- Début d'installation de windowsprefetch ---- ]${neutre}\n"
     pip3 install windowsprefetch && echo -e "${vert} [ OK ] windowsprefetch installés ${neutre}"
-    sleep 1
+    decompte 1
     # ShimCacheParser.py 
     echo -e "\n${bleu}[ ---- Début d'installation de ShimCacheParser.py ---- ]${neutre}\n"
     cd $cheminInstall
@@ -477,10 +505,12 @@ function validChang() {
         reboot
     else
         echo -e "${violet}Il faudra redémarrer avant d'utiliser les applications${neutre}"
-        echo -e "${violet}Retour au manu dans 4 secondes...${neutre}"
-        sleep 4
+        echo -e "${violet}Retour au menu dans 4 secondes...${neutre}"
+        decompte 4
     fi
 }
+
+
 
 
 ######## MENU ###########################################################
