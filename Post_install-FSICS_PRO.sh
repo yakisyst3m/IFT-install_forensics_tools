@@ -13,6 +13,7 @@
 # 2022 03 10    v2.1-4 Modif install wireshark + extpackVbox + formatage du mode verbeux
 # 2022 03 16    v2.1-5 Correction volatility 3 table des symbols windows + fonction décompte + modif fct IPv6
 # 2022 03 18    v2.1-6 suite sleuthkit
+# 2022 03 18    v2.1-7 Python ImageMounter
 
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
@@ -36,6 +37,8 @@
     violet='\e[1;35m'
     neutre='\e[0;m'
     bleufondjaune='\e[7;44m\e[1;33m'
+    souligne="\e[4m"
+    neutrePolice='\e[0m'
 
 
 
@@ -105,7 +108,7 @@ function mjour() {
 function installbase() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Installation des logiciels de base ---- ]${neutre}\n"
-    apt install -y vim htop glances bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx gdb minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip 
+    apt install -y vim htop glances bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip 
     
     # Installation de Wireshark de façon non-intéractive
     echo "wireshark-common wireshark-common/install-setuid boolean true" | debconf-set-selections
@@ -246,6 +249,7 @@ function claminst() {
 function gdbinst() {
     # GDB-PEDA pour user
     echo -e "\n${bleu}[ ---- Début d'installation de gdb-peda ---- ]${neutre}\n"
+    apt install -y gdb
     git clone https://github.com/longld/peda.git /home/$utilisateur/peda
     echo "source /home/$utilisateur/peda/peda.py" >> /home/$utilisateur/.gdbinit  && echo -e "${vert} [ OK ] gdp-peda paramétré pour $utilisateur ${neutre}"
 
@@ -439,6 +443,24 @@ function sleuthkitInstall() {
     make
     make install && echo -e "${vert} [ OK ] Suite Sleuthkit installée ${neutre}"
 }
+
+########    INSTALLER L'APPLICATION PYTHON IMAGEMOUNTER - MOTAGE AUTO E01
+
+function imagemounterE01() {
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de l'application Python ImageMounter pour Image E01 Encase ---- ]${neutre}\n"
+    cd $cheminInstall
+    
+    # Dépendences
+    apt-get install python-setuptools xmount ewf-tools afflib-tools sleuthkit disktype
+    
+    # Installation
+    pip install imagemounter && echo -e "${vert} [ OK ] ImageMounter installé - Pour lancer : imout image.E01 ${neutre}"
+    
+    # Vérification des dépendence obligatoires et facultatives
+    imount --check
+}
+
 ########    FORENSICS-ALL
 
 function forall() {
@@ -533,42 +555,54 @@ function validChang() {
 
 clear
 while true ; do 
-echo -e "${vert}       ________      ______     _________ ${neutre}"
-echo -e "${vert}      /_______/\    /_____/\   /________/\ ${neutre}"
-echo -e "${vert}      \__.::._\/    \::::_\/_  \__.::.__\/ ${neutre}"
-echo -e "${vert}         \::\ \      \:\/___/\    \::\ \   ${neutre}"
-echo -e "${vert}         _\::\ \__    \:::._\/     \::\ \  ${neutre}"
-echo -e "${vert}        /__\::\__/\    \:\ \        \::\ \ ${neutre}"
-echo -e "${vert}        \________\/     \_\/         \__\/  ${neutre}"               
+echo -e "${vert}           ________      ______     _________ ${neutre}"
+echo -e "${vert}          /_______/\    /_____/\   /________/\ ${neutre}"
+echo -e "${vert}          \__.::._\/    \::::_\/_  \__.::.__\/ ${neutre}"
+echo -e "${vert}             \::\ \      \:\/___/\    \::\ \   ${neutre}"
+echo -e "${vert}             _\::\ \__    \:::._\/     \::\ \  ${neutre}"
+echo -e "${vert}            /__\::\__/\    \:\ \        \::\ \ ${neutre}"
+echo -e "${vert}            \________\/     \_\/         \__\/  ${neutre}"               
 echo " "
-echo -e "${rouge}         -- [ INSTALL FORENSICS TOOLS ] --${neutre}"
+echo -e "\e[2C${bleu}---${neutre}----${rouge}----   [ ${vert}I${rouge}NSTALL ${vert}F${rouge}ORENSICS ${vert}T${rouge}OOLS ]    ${bleu}---${neutre}----${rouge}----${neutre}"
 echo " "
-    echo -e "${bleu}Faites votre choix d'installation :${neutre}"
-    echo -e "${vert}-----------------------------------${neutre}"
-    echo -e "[  ${bleu}1${neutre} ] - Modification des source.list + Mise à jour des paquets"
-    echo -e "[  ${bleu}2${neutre} ] - Installation des logiciels de base"
-    echo -e "[  ${bleu}3${neutre} ] - Configuration des applications : Wireshark / déscativation IPv6 / Activation du pavé numérique / Tmux / Vim"
-    echo -e "[  ${bleu}4${neutre} ] - Création de l'architecture des dossiers : pour montage des disques windows et linux à analyser"
-    echo -e "[  ${bleu}5${neutre} ] - Installation de clamav + Mise à jour des signatures AV"
-    echo -e "[  ${bleu}6${neutre} ] - Installation des outils de Reverse : gdb-peda"
-    echo -e "[  ${bleu}7${neutre} ] - Installation de volatility 2.6"
-    echo -e "[  ${bleu}8${neutre} ] - Installation de volatility 3"
-    echo -e "[  ${bleu}9${neutre} ] - Installation de Regripper : analyse registre Windows"
-    echo -e "[ ${bleu}10${neutre} ] - Installation des outils de bureautique : thunderbird / readpst / msgconvert"
-    echo -e "[ ${bleu}11${neutre} ] - Installation des outils de disques : guymager / qemu / suite ewf / hdparm / sdparm "
-    echo -e "[ ${bleu}12${neutre} ] - Installation des Outils de Timeline et Artefacts Windows : La suite plaso / ewf / olevba3 / prefetch / ShimCacheParser"
-    echo -e "[ ${bleu}13${neutre} ] - Installation de la suite sleuthkit : mmls / fls / icat / mactime"
-    echo -e "[ ${bleu}14${neutre} ] - Installation du paquet : forensics-all"
-    echo -e "[ ${bleu}15${neutre} ] - Installation du paquet : forensics-extra"
-    echo -e "[ ${bleu}16${neutre} ] - Installation du paquet : forensics-extra-gui"
-    echo -e "[ ${bleu}17${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
-    echo -e "[ ${violet}20${neutre} ] - Tout installer"
-    echo
-    echo -e "[  ${rouge}F${neutre} ] - Taper F pour finaliser l'installation..."
-    echo -e "        ---> Dans tous les cas, une fois vos installations choisies, terminer par l'option [ F ]\n"
-    echo
-    echo -e "${rouge}[  Q ] - Taper Q pour quitter...${neutre}\n"
-    read -p "Entrer votre choix : " INSTALL;
+    #echo -e "${bleu}Faites votre choix d'installation :${neutre}"
+    #echo -e "${vert}-----------------------------------${neutre}"
+    echo -e "\e[3C${bleu}[ --    ${souligne}INSTALLATION DE BASE${neutrePolice}     -- ]${neutre}"    
+    echo -e "\t[  ${vert}1${neutre} ] - Modification des source.list + Mise à jour des paquets"
+    echo -e "\t[  ${vert}2${neutre} ] - Installation des logiciels de base"
+    echo -e "\t[  ${vert}3${neutre} ] - Configuration des applications : Wireshark / déscativation IPv6 / Activation du pavé numérique / Tmux / Vim"
+    echo -e "\t[  ${vert}4${neutre} ] - Création de l'architecture des dossiers : pour montage des disques windows et linux à analyser"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}ANTI-VIRUS${neutrePolice}     -- ]${neutre}"    
+    echo -e "\t[  ${vert}5${neutre} ] - Installation de clamav + Mise à jour des signatures AV"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}REVERSE ENGINEERING${neutrePolice}     -- ]${neutre}"
+    echo -e "\t[  ${vert}6${neutre} ] - Installation des outils de Reverse : gdb-peda"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE RAM${neutrePolice}     -- ]${neutre}"    
+    echo -e "\t[  ${vert}7${neutre} ] - Installation de volatility 2.6"
+    echo -e "\t[  ${vert}8${neutre} ] - Installation de volatility 3"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE REGISTRE${neutrePolice}     -- ]${neutre}"
+    echo -e "\t[  ${vert}9${neutre} ] - Installation de Regripper : analyse registre Windows"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}OUTILS BUREAUTIQUE${neutrePolice}     -- ]${neutre}"
+    echo -e "\t[ ${vert}10${neutre} ] - Installation des outils de bureautique : thunderbird / readpst / msgconvert"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE DISQUE  + MFT + TIMELINE${neutrePolice}   -- ]${neutre}"
+    echo -e "\t[ ${vert}11${neutre} ] - Installation des outils de disques : guymager / qemu / suite ewf / hdparm / sdparm "
+    echo -e "\t[ ${vert}12${neutre} ] - Installation de l'outil de disque E01 : Pyhton ImageMounter pour montage auto d'une image E01 encase"
+    echo -e "\t[ ${vert}13${neutre} ] - Installation des Outils de Timeline et Artefacts Windows : La suite plaso / ewf / olevba3 / prefetch / ShimCacheParser"
+    echo -e "\t[ ${vert}14${neutre} ] - Installation de la suite sleuthkit : mmls / fls / icat / mactime"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}OUTILS FORENSICS SUPPLEMENTAIRES${neutrePolice}     -- ]${neutre}"    
+    echo -e "\t[ ${vert}15${neutre} ] - Installation du paquet : forensics-all"
+    echo -e "\t[ ${vert}16${neutre} ] - Installation du paquet : forensics-extra"
+    echo -e "\t[ ${vert}17${neutre} ] - Installation du paquet : forensics-extra-gui"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}VIRTUALISATION${neutrePolice}     -- ]${neutre}"
+    echo -e "\t[ ${vert}18${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
+
+    echo -e "\n\t[ ${vert}100${neutre} ] - ${vert}Tout installer${neutre}"
+    echo -e "\t[  ${rouge}F${neutre} ] - Taper F pour finaliser l'installation..."
+    echo -e "\t---> Dans tous les cas, une fois vos installations choisies, terminer par l'option [ F ]\n"
+    echo -e "\e[20C[  ${rouge}Q${neutre} ] - Taper ${rouge}Q${neutre} pour ${rouge}quitter${neutre}...\n"
+    echo -e "\e[3CEntrer votre choix : \c"
+    read INSTALL
+    #read -p "Entrer votre choix : " INSTALL
+ 
     echo
 
     case $INSTALL in
@@ -595,19 +629,21 @@ echo " "
     "11")
         diskinst ;;
     "12")
-        mftinst ;;
+        imagemounterE01 ;;
     "13")
+        mftinst ;;
+    "14")
         sleuthkitInstall ;;
-    "14")        
+    "15")        
         forall ;;
-    "15")
-        forextra ;;
     "16")
-        forextragui ;;
+        forextra ;;
     "17")
+        forextragui ;;
+    "18")
         vbox ;;
-    "20")
-        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; reginst ; burinst ; diskinst ; mftinst ; forall ; forextra ; forextragui ; vbox ;;
+    "100")
+        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; forall ; forextra ; forextragui ; vbox ;;
     f|F) break ;;
     q|Q) exit ;;
     *) continue ;;
