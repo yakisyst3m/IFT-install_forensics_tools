@@ -13,7 +13,7 @@ Une fois Debian ou Ubuntu installé, il suffit de lancer ce script pour obtenir 
   toto@debian:~$ sudo ./install.sh
   ```
 <p align="center">
-<img src="/img/ift.png" alt="IFT MENU" width="700"/>
+<img src="/img/ift.png" alt="IFT MENU" width="900"/>
 </p>
   
 ## 2 - Logiciels installés + exemples d'utilisation :
