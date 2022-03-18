@@ -12,11 +12,13 @@
 # 2022 03 09    v2.1-3 Correctif chemins + python3 + fcontion validchg
 # 2022 03 10    v2.1-4 Modif install wireshark + extpackVbox + formatage du mode verbeux
 # 2022 03 16    v2.1-5 Correction volatility 3 table des symbols windows + fonction décompte + modif fct IPv6
+# 2022 03 18    v2.1-6 suite sleuthkit
 
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
-# VARIABLES : LES VERSIONS / CHEMINS / COULEURS
 
+# VARIABLES : LES VERSIONS / CHEMINS / COULEURS
+    utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
     VERSION_OS=$(egrep '^ID=' /etc/os-release | cut -d "=" -f2)
     ENVBUREAU="/etc/mate/"
     GESTCONNECTION="/etc/lightdm/"
@@ -35,9 +37,7 @@
     neutre='\e[0;m'
     bleufondjaune='\e[7;44m\e[1;33m'
 
-######## PREPARATION ###########################################################
 
-utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
 
 ######## DECOMPTE ###########################################################
 
@@ -296,7 +296,6 @@ function volat2() {
     
     # Test
     vol2.py -h
-    vol2.py --info
 }
         
 ########    INSTALLER VOLATILITY 3
@@ -317,12 +316,16 @@ function volat3() {
     echo "Installation des outils python 3"
     apt install -y python3 python3-dev libpython3-dev python3-pip python3-setuptools python3-wheel git && echo -e "${vert} [ OK ] Outils python pour Volatility 3 installés ${neutre}"
 
-    # Téléchargement et Installation de volatility 3function volat2() {
+    # Téléchargement de volatility 3
     git clone https://github.com/volatilityfoundation/volatility3.git
     mv volatility3 /home/$utilisateur/.volatility3
+    
+    # Téléchargement de la table des symbols windows
     cd /home/$utilisateur/.volatility3/volatility3/symbols/
     wget https://downloads.volatilityfoundation.org/volatility3/symbols/windows.zip
     unzip windows.zip
+    
+    # Renommage 
     cd /home/$utilisateur/.volatility3
     mv vol.py vol3.py
     chmod -R 750 ../.volatility3/
@@ -423,6 +426,19 @@ function mftinst() {
     chown -R $utilisateur: /home/$utilisateur/ShimCacheParser-master/
 }
 
+########    INSTALLER LA SUITE SLEUTHKIT
+
+function sleuthkitInstall() {
+    # fls / mmls / icat / mactime / 
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de la suite sleuthkit ---- ]${neutre}\n"
+    cd $cheminInstall
+    unzip res/sleuthkit-debian-master.zip 
+    cd sleuthkit-debian-master/
+    ./configure 
+    make
+    make install && echo -e "${vert} [ OK ] Suite Sleuthkit installée ${neutre}"
+}
 ########    FORENSICS-ALL
 
 function forall() {
@@ -541,11 +557,12 @@ echo " "
     echo -e "[ ${bleu}10${neutre} ] - Installation des outils de bureautique : thunderbird / readpst / msgconvert"
     echo -e "[ ${bleu}11${neutre} ] - Installation des outils de disques : guymager / qemu / suite ewf / hdparm / sdparm "
     echo -e "[ ${bleu}12${neutre} ] - Installation des Outils de Timeline et Artefacts Windows : La suite plaso / ewf / olevba3 / prefetch / ShimCacheParser"
-    echo -e "[ ${bleu}13${neutre} ] - Installation du paquet : forensics-all"
-    echo -e "[ ${bleu}14${neutre} ] - Installation du paquet : forensics-extra"
-    echo -e "[ ${bleu}15${neutre} ] - Installation du paquet : forensics-extra-gui"
-    echo -e "[ ${bleu}16${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
-    echo -e "[ ${violet}17${neutre} ] - Tout installer"
+    echo -e "[ ${bleu}13${neutre} ] - Installation de la suite sleuthkit : mmls / fls / icat / mactime"
+    echo -e "[ ${bleu}14${neutre} ] - Installation du paquet : forensics-all"
+    echo -e "[ ${bleu}15${neutre} ] - Installation du paquet : forensics-extra"
+    echo -e "[ ${bleu}16${neutre} ] - Installation du paquet : forensics-extra-gui"
+    echo -e "[ ${bleu}17${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
+    echo -e "[ ${violet}20${neutre} ] - Tout installer"
     echo
     echo -e "[  ${rouge}F${neutre} ] - Taper F pour finaliser l'installation..."
     echo -e "        ---> Dans tous les cas, une fois vos installations choisies, terminer par l'option [ F ]\n"
@@ -580,14 +597,16 @@ echo " "
     "12")
         mftinst ;;
     "13")
+        sleuthkitInstall ;;
+    "14")        
         forall ;;
-    "14")
-        forextra ;;
     "15")
-        forextragui ;;
+        forextra ;;
     "16")
-        vbox ;;
+        forextragui ;;
     "17")
+        vbox ;;
+    "20")
         mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; reginst ; burinst ; diskinst ; mftinst ; forall ; forextra ; forextragui ; vbox ;;
     f|F) break ;;
     q|Q) exit ;;
