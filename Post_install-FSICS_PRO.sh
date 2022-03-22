@@ -14,7 +14,7 @@
 # 2022 03 16    v2.1-5 Correction volatility 3 table des symbols windows + fonction décompte + modif fct IPv6
 # 2022 03 18    v2.1-6 suite sleuthkit
 # 2022 03 18    v2.1-7 Python ImageMounter
-
+# 2022 03 22    v2.1-8 Correction vol2.py + vol3.py + ShimCacheParser.py
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
@@ -108,7 +108,7 @@ function mjour() {
 function installbase() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Installation des logiciels de base ---- ]${neutre}\n"
-    apt install -y vim htop glances bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip 
+    apt update && apt install -y vim htop glances bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip 
     
     # Installation de Wireshark de façon non-intéractive
     echo "wireshark-common wireshark-common/install-setuid boolean true" | debconf-set-selections
@@ -239,7 +239,7 @@ function creerrepertoires() {
 function claminst() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de clamav ---- ]${neutre}\n"
-    apt install -y clamav && echo -e "${vert} [ OK ] Clamav installé ${neutre}"
+    apt update && apt install -y clamav && echo -e "${vert} [ OK ] Clamav installé ${neutre}"
     systemctl stop clamav-freshclam.service && echo -e "${vert} [ OK ] Arrêt du service Clamav ${neutre}"
     freshclam && echo -e "${vert} [ OK ] Mise à jour du service Clamav ${neutre}"
     systemctl start clamav-freshclam.service && echo -e "${vert} [ OK ] Démarrage du service Clamav ${neutre}"
@@ -251,7 +251,7 @@ function claminst() {
 function gdbinst() {
     # GDB-PEDA pour user
     echo -e "\n${bleu}[ ---- Début d'installation de gdb-peda ---- ]${neutre}\n"
-    apt install -y gdb
+    apt update && apt install -y gdb
     git clone https://github.com/longld/peda.git /home/"$utilisateur"/peda
     echo "source /home/$utilisateur/peda/peda.py" >> /home/"$utilisateur"/.gdbinit  && echo -e "${vert} [ OK ] gdp-peda paramétré pour $utilisateur ${neutre}"
 
@@ -273,7 +273,7 @@ function volat2() {
     cd /home/"$utilisateur"/Documents/
     echo "Début de l'installation et des mises à jour de Volatility 2.6 :"
     echo "Installation des librairies"
-    apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 2.6 installés ${neutre}"
+    apt update && apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 2.6 installés ${neutre}"
     decompte 1
     
     # Installation de python 2
@@ -297,10 +297,6 @@ function volat2() {
     # Renommage de fichier
     mv /usr/local/bin/vol.py /usr/local/bin/vol2.py
     
-    # Configuration du PATH de env pour volatility
-    echo "export PATH=/home/$utilisateur/.local/bin:"'$PATH' >> ~/.bashrc
-    . ~/.bashrc && echo -e "${vert} [ OK ] PATH $utilisateur mis à jour ${neutre}"
-    
     # Test
     vol2.py -h
     sleep 3
@@ -317,7 +313,7 @@ function volat3() {
     cd /home/"$utilisateur"/
     echo "Début de l'installation et des mises à jour de Volatility 3:"
     echo "Installation des librairies"
-    apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 3 installés ${neutre}"
+    apt update && apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 3 installés ${neutre}"
     decompte 1
 
     # Installation de python 3
@@ -337,16 +333,13 @@ function volat3() {
     cd /home/"$utilisateur"/.volatility3
     mv vol.py vol3.py
     chmod -R 750 ../.volatility3/
-    chown -R "$utilisateur": ../.volatility3/ && echo -e "${vert} [ OK ] Volatility 3 téléchargé ${neutre}"
+    chown -R "$utilisateur": ../.volatility3/
     
     # Installation des modules volatility
     pip3 install -r requirements.txt
     
-    # Configuration du PATH de env pour volatility 3
-    echo "export PATH=/home/$utilisateur/.volatility3:"'$PATH' >> /home/"$utilisateur"/.bashrc
-    echo "export PATH=/home/$utilisateur/.volatility3:"'$PATH' >> /root/.bashrc
-    . /home/"$utilisateur"/.bashrc && echo -e "${vert} [ OK ] PATH $utilisateur mis à jour ${neutre}"
-    . /root/.bashrc && echo -e "${vert} [ OK ] PATH root mis à jour ${neutre}"
+    # Lien pour lancer l'application
+    ln -s /home/"$utilisateur"/.volatility3/vol3.py /usr/local/bin/vol3.py && echo -e "${vert} [ OK ] Volatility 3 téléchargé ${neutre}"
     
     # Test
     vol3.py -h
@@ -360,7 +353,7 @@ function reginst() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de Regripper V3.0 ---- ]${neutre}\n"
     cd "$cheminInstall"
-    apt-get install -y git libparse-win32registry-perl -y
+    apt update && apt install -y git libparse-win32registry-perl -y
     
     # Téléchargement de RegRipper3.0 et déplacement des fichiers dans /usr/local/src/regripper
     cd /usr/local/src/
@@ -396,7 +389,7 @@ function reginst() {
 function burinst() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation des outils de bureautique ---- ]${neutre}\n"
-    apt install -y libemail-outlook-message-perl pst-utils thunderbird  && echo -e "${vert} [ OK ] Outils Bureautique installés ${neutre}"
+    apt update && apt install -y libemail-outlook-message-perl pst-utils thunderbird  && echo -e "${vert} [ OK ] Outils Bureautique installés ${neutre}"
     sleep 3
 }
 
@@ -405,7 +398,7 @@ function burinst() {
 function diskinst() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation des outils de disque ---- ]${neutre}\n"
-    apt install -y guymager qemu-utils libewf-dev ewf-tools hdparm sdparm && echo -e "${vert} [ OK ] Outils de disques installés ${neutre}"
+    apt update && apt install -y guymager qemu-utils libewf-dev ewf-tools hdparm sdparm && echo -e "${vert} [ OK ] Outils de disques installés ${neutre}"
     sleep 3
 }
 
@@ -419,7 +412,7 @@ function mftinst() {
     decompte 1
     # getfattr # ewfacquire ...
     echo -e "\n${bleu}[ ---- Début d'installation de pff-tools ewf-tools libewf-dev libewf2 attr ---- ]${neutre}\n"
-    apt install -y pff-tools ewf-tools libewf-dev libewf2 attr && echo -e "${vert} [ OK ] pff-tools ewf-tools libewf-dev libewf2 attr installés ${neutre}"
+    apt update && apt install -y pff-tools ewf-tools libewf-dev libewf2 attr && echo -e "${vert} [ OK ] pff-tools ewf-tools libewf-dev libewf2 attr installés ${neutre}"
     decompte 1
     # Suite plaso : # log2timeline.py # psort.py # psteal.py
     echo -e "\n${bleu}[ ---- Début d'installation de la suite plaso ---- ]${neutre}\n"
@@ -432,10 +425,12 @@ function mftinst() {
     # ShimCacheParser.py 
     echo -e "\n${bleu}[ ---- Début d'installation de ShimCacheParser.py ---- ]${neutre}\n"
     cd "$cheminInstall"
+    apt install -y python2*
     unzip ./res/ShimCacheParser-master.zip 
-    cp -r ShimCacheParser-master /home/"$utilisateur"/
-    chmod -R 750 /home/"$utilisateur"/ShimCacheParser-master/ && echo -e "${vert} [ OK ] ShimCacheParser installé dans : /home/$utilisateur/ShimCacheParser-master/  ${neutre}"
-    chown -R "$utilisateur": /home/"$utilisateur"/ShimCacheParser-master/
+    mv ShimCacheParser-master /home/"$utilisateur"/.shimcacheparser/
+    chmod -R 750 /home/"$utilisateur"/.shimcacheparser/ && echo -e "${vert} [ OK ] ShimCacheParser copié dans : /home/$utilisateur/.shimcacheparser/  ${neutre}"
+    chown -R "$utilisateur": /home/"$utilisateur"/.shimcacheparser/
+    ln -s /home/"$utilisateur"/.shimcacheparser/ShimCacheParser.py /usr/local/bin/ShimCacheParser.py
     sleep 3
 }
 
@@ -462,7 +457,7 @@ function imagemounterE01() {
     cd "$cheminInstall"
     
     # Dépendences
-    apt install -y python3-pip python-setuptools xmount ewf-tools afflib-tools sleuthkit disktype qemu-utils avfs xfsprogs lvm2 vmfs-tools mtd-tools squashfs-tools mdadm cryptsetup libbde-utils libvshadow-utils 
+    apt update && apt install -y python3-pip python-setuptools xmount ewf-tools afflib-tools sleuthkit disktype qemu-utils avfs xfsprogs lvm2 vmfs-tools mtd-tools squashfs-tools mdadm cryptsetup libbde-utils libvshadow-utils 
     
     # Installation
     pip3 install pytsk3 python-magic imagemounter && echo -e "${vert} [ OK ] ImageMounter installé - Pour lancer : imount image.E01 ${neutre}"
@@ -478,7 +473,7 @@ function imagemounterE01() {
 function forall() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de FORENSICS-ALL ---- ]${neutre}\n"
-    apt install -y forensics-all && echo -e "${vert} [ OK ] forensics-all installé ${neutre}"
+    apt update && apt install -y forensics-all && echo -e "${vert} [ OK ] forensics-all installé ${neutre}"
     sleep 3
 }
 
@@ -487,7 +482,7 @@ function forall() {
 function forextra() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de FORENSICS-EXTRA ---- ]${neutre}\n"
-    apt install -y forensics-extra && echo -e "${vert} [ OK ] forensics-extra installé ${neutre}"
+    apt update && apt install -y forensics-extra && echo -e "${vert} [ OK ] forensics-extra installé ${neutre}"
     sleep 3
 }
 
@@ -496,7 +491,7 @@ function forextra() {
 function forextragui() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de FORENSICS-EXTRA-GUI ---- ]${neutre}\n"
-    apt install -y forensics-extra-gui && echo -e "${vert} [ OK ] forensics-extra-gui installé ${neutre}"
+    apt update && apt install -y forensics-extra-gui && echo -e "${vert} [ OK ] forensics-extra-gui installé ${neutre}"
     sleep 3
 }
 
