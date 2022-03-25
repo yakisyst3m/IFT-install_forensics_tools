@@ -7,6 +7,9 @@
 ## 1 - Présentation :
 **Il y a 1 Script de post-installation pour la configuration automatique des outils Forensics pour Debian et Ubuntu :**    
 Une fois Debian ou Ubuntu installé, il suffit de lancer ce script pour obtenir les logiciels nécessaires pour faire à minima du forensic !
+
+
+## 2 - Installation :
 - Lancer le programme : [ Lancer en **root** ]
   ```
   toto@debian:~$ sudo ./install.sh
@@ -15,7 +18,7 @@ Une fois Debian ou Ubuntu installé, il suffit de lancer ce script pour obtenir 
 <img src="/img/ift.png" alt="IFT MENU" width="900"/>
 </p>
   
-## 2 - Logiciels installés + exemples d'utilisation :
+## Quelques infos : Liste des Logiciels installés + exemples d'utilisation :
 :radio_button: Reverse :
 - gdb + gdb-peda
 
