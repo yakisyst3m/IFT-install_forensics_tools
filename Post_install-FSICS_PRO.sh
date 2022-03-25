@@ -219,8 +219,8 @@ function config() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Configuration de TMUX ---- ]${neutre}\n"
     if [[ -f "/home/$utilisateur/.tmux.conf" ]] && [[ -f "/root/.tmux.conf" ]] ; then
-        cp ./res/.tmux.conf /home/"$utilisateur"/
-        cp ./res/.tmux.conf /root/
+        cp ./res/tmux.conf /home/"$utilisateur"/.tmux.conf
+        cp ./res/tmux.conf /root/.tmux.conf
         chown "$utilisateur": /home/"$utilisateur"/.tmux.conf && echo -e "${vert} [ OK ] TMUX Configuré ${neutre}"
         sleep 2
     fi
@@ -652,49 +652,49 @@ echo -e "\e[2C${bleu}---${neutre}----${rouge}----   [ ${bleu}INSTALL ${neutre}FO
 echo " "
     #echo -e "${bleu}Faites votre choix d'installation :${neutre}"
     #echo -e "${vert}-----------------------------------${neutre}"
-    echo -e "\e[3C${bleu}[ --    ${souligne}INSTALLATION DE BASE${neutrePolice}     -- ]${neutre}"    
+    echo -e "\e[3C${bleu}[ --    ${souligne}INSTALLATION DE BASE${neutrePolice}${bleu}     -- ]${neutre}"    
     echo -e "\t[  ${vert}0${neutre} ] - Modification du fichier source.list HTTP vers HTTPS"    
     echo -e "\t[  ${vert}1${neutre} ] - Mise à jour des paquets"
     echo -e "\t[  ${vert}2${neutre} ] - Installation des logiciels de base + configuration des applications : Wireshark / déscativation IPv6 / Activation du pavé numérique / Tmux / Vim / Date-Heure bash_history"
     echo -e "\t[  ${vert}3${neutre} ] - Création de l'architecture des dossiers : pour montage des disques windows et linux à analyser"
     
-    echo -e "\n\e[3C${bleu}[ --    ${souligne}ANTI-VIRUS${neutrePolice}     -- ]${neutre}"    
-    echo -e "\t[  ${vert}10${neutre} ] - Installation de clamav + Mise à jour des signatures AV"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}ANTI-VIRUS${neutrePolice}${bleu}     -- ]${neutre}"    
+    echo -e "\t[ ${vert}10${neutre} ] - Installation de clamav + Mise à jour des signatures AV"
     
-    echo -e "\n\e[3C${bleu}[ --    ${souligne}REVERSE ENGINEERING${neutrePolice}     -- ]${neutre}"
-    echo -e "\t[  ${vert}20${neutre} ] - Installation des outils de Reverse : gdb-peda"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}REVERSE ENGINEERING${neutrePolice}${bleu}     -- ]${neutre}"
+    echo -e "\t[ ${vert}20${neutre} ] - Installation des outils de Reverse : gdb-peda"
     
-    echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE RAM${neutrePolice}     -- ]${neutre}"    
-    echo -e "\t[  ${vert}30${neutre} ] - Installation de volatility 2.6"
-    echo -e "\t[  ${vert}31${neutre} ] - Installation de volatility 3"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE RAM${neutrePolice}${bleu}     -- ]${neutre}"    
+    echo -e "\t[ ${vert}30${neutre} ] - Installation de volatility 2.6"
+    echo -e "\t[ ${vert}31${neutre} ] - Installation de volatility 3"
     
-    echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE REGISTRE${neutrePolice}     -- ]${neutre}"
-    echo -e "\t[  ${vert}40${neutre} ] - Installation de Regripper : analyse registre Windows"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE REGISTRE${neutrePolice}${bleu}     -- ]${neutre}"
+    echo -e "\t[ ${vert}40${neutre} ] - Installation de Regripper : analyse registre Windows"
     
-    echo -e "\n\e[3C${bleu}[ --    ${souligne}OUTILS BUREAUTIQUE${neutrePolice}     -- ]${neutre}"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}OUTILS BUREAUTIQUE${neutrePolice}${bleu}     -- ]${neutre}"
     echo -e "\t[ ${vert}50${neutre} ] - Installation des outils de bureautique : thunderbird / readpst / msgconvert"
     
-    echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE DISQUE  + MFT + TIMELINE${neutrePolice}   -- ]${neutre}"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE DISQUE  + MFT + TIMELINE${neutrePolice}${bleu}   -- ]${neutre}"
     echo -e "\t[ ${vert}60${neutre} ] - Installation des outils de disques : guymager / qemu / suite ewf / hdparm / sdparm "
     echo -e "\t[ ${vert}61${neutre} ] - Installation de l'outil de disque E01 : Pyhton ImageMounter pour montage auto d'une image E01 encase"
     echo -e "\t[ ${vert}62${neutre} ] - Installation des Outils de Timeline et Artefacts Windows : La suite plaso / ewf / olevba3 / prefetch / ShimCacheParser"
     echo -e "\t[ ${vert}63${neutre} ] - Installation de la suite sleuthkit : mmls / fls / icat / mactime"
     
-    echo -e "\n\e[3C${bleu}[ --    ${souligne}LOG - CONVERSION - PARSING - COLLECTE${neutrePolice}   -- ]${neutre}"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}LOG - CONVERSION - PARSING - COLLECTE${neutrePolice}${bleu}   -- ]${neutre}"
     echo -e "\t[ ${vert}70${neutre} ] - Installation des outils d'analyse de log : auditd / evtx2log"
     
-    echo -e "\n\e[3C${bleu}[ --    ${souligne}OUTILS FORENSICS SUPPLEMENTAIRES${neutrePolice}     -- ]${neutre}"    
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}OUTILS FORENSICS SUPPLEMENTAIRES${neutrePolice}${bleu}     -- ]${neutre}"    
     echo -e "\t[ ${vert}80${neutre} ] - Installation du paquet : forensics-all"
     echo -e "\t[ ${vert}81${neutre} ] - Installation du paquet : forensics-extra"
     echo -e "\t[ ${vert}82${neutre} ] - Installation du paquet : forensics-extra-gui"
     
-    echo -e "\n\e[3C${bleu}[ --    ${souligne}VIRTUALISATION${neutrePolice}     -- ]${neutre}"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}VIRTUALISATION${neutrePolice}${bleu}     -- ]${neutre}"
     echo -e "\t[ ${vert}90${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
 
     echo -e "\n\t[ ${vert}100${neutre} ] - ${vert}Tout installer (Sauf N°0 sourcelist)${neutre}"
-    echo -e "\t[  ${rouge}F${neutre} ] - Taper F pour finaliser l'installation..."
-    echo -e "\t---> Dans tous les cas, une fois vos installations choisies, terminer par l'option [ F ]\n"
-    echo -e "\e[20C[  ${rouge}Q${neutre} ] - Taper ${rouge}Q${neutre} pour ${rouge}quitter${neutre}...\n"
+    echo -e "\t[  ${rouge}F${neutre}  ] - Taper F pour finaliser l'installation..."
+    echo -e "\t\t---> Dans tous les cas, une fois vos installations choisies, terminer par l'option [ F ]\n"
+    echo -e "\e[20C[  ${rouge}Q${neutre}  ] - Taper ${rouge}Q${neutre} pour ${rouge}quitter${neutre}...\n"
     echo -e "\e[3CEntrer votre choix : \c"
     read INSTALL
     echo
