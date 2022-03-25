@@ -31,7 +31,7 @@ Une fois Debian ou Ubuntu installé, il suffit de lancer ce script pour obtenir 
 :radio_button: Analyse Réseau :
 - wireshark
 - tshark
-- tcpdumppost_install_linux_install_forensics_tools
+- tcpdump
 
 :radio_button: Outils Réseau :
 - nmap
