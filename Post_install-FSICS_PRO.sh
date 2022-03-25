@@ -15,10 +15,13 @@
 # 2022 03 18    v2.1-6 suite sleuthkit
 # 2022 03 18    v2.1-7 Python ImageMounter
 # 2022 03 22    v2.1-8 Correction vol2.py + vol3.py + ShimCacheParser.py
+# 2022 03 25    v2.1-8.1 Ajout outils log + amélioration code
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
 # VARIABLES : LES VERSIONS / CHEMINS / COULEURS
+    versionIFT="v2.1-8.1 du 25 mars 2022"
+    
     utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
     VERSION_OS=$(grep -E '^ID=' /etc/os-release | cut -d "=" -f2)
     ENVBUREAU="/etc/mate/"
@@ -42,7 +45,7 @@
 
 
 
-######## DECOMPTE ###########################################################
+######## DECOMPTE 
 
 decompte() {
     i=$1
@@ -55,10 +58,10 @@ decompte() {
     echo -e "\n${vert} Fin du décompte ${neutre}"
 }
 
-######## MODIFICATION DES SOURCE.LIST ####################################################
+######## MODIFICATION DES SOURCE.LIST 
 
-    ######## version os DEBIAN ####################################################
-function mjour() {
+    # DEBIAN 
+function sourcelist() {
     if [ "$VERSION_OS" = 'debian' ] ; then
         echo -e "\n${bleu}[ ---- Mise à jour de source.list de Debian ---- ]${neutre}\n"
         echo "deb http://deb.debian.org/debian/ bullseye main non-free contrib" > /etc/apt/sources.list
@@ -83,7 +86,7 @@ function mjour() {
         fi
         decompte 2
                       
-    ######## version os UBUNTU ############################################################"
+    # UBUNTU 
     elif [ "$VERSION_OS" = 'ubuntu' ] ; then
         echo -e "\n${bleu}[ ---- Mise à jour de source.list de Ubuntu ---- ]${neutre}\n"
         echo "deb http://fr.archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse"  > /etc/apt/sources.list
@@ -102,8 +105,15 @@ function mjour() {
     fi
 }
 
+######## MISE A JOUR DU SYSTEME D'EXPLOITATION
 
-######## INSTALL DES LOGICIELS DE BASE #################################################################################
+function mjour() {
+    echo -e "\n${bleu}[ ---- Mise à jour du système d'exploitation---- ]${neutre}\n"
+    apt update && apt upgrade -y && echo -e "${vert} [ OK ] Système à jour ${neutre}"
+    sleep 3
+}
+
+######## INSTALL DES LOGICIELS DE BASE 
 
 function installbase() {
     echo -e "\n##############################################\n"
@@ -141,11 +151,14 @@ function config() {
     # Wireshark
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Configuration de wireshark ---- ]${neutre}\n"
-    usermod -aG wireshark "$utilisateur"
-    chgrp wireshark /usr/bin/dumpcap
-    chmod 750 /usr/bin/dumpcap
-    setcap cap_net_raw,cap_net_admin=eip /usr/bin/dumpcap && echo -e "${vert} [ OK ] Wireshark configuré ${neutre}" || echo -e "${rouge} [ NOK ] Résoudre le problème ${neutre}"
-    sleep 2
+    dpkg -l | awk -F " " '{print $2}' | grep -qEi "wireshark$"
+    if [ "$?" = "0" ] ; then    
+        usermod -aG wireshark "$utilisateur"
+        chgrp wireshark /usr/bin/dumpcap
+        chmod 750 /usr/bin/dumpcap
+        setcap cap_net_raw,cap_net_admin=eip /usr/bin/dumpcap && echo -e "${vert} [ OK ] Wireshark configuré ${neutre}" || echo -e "${rouge} [ NOK ] Résoudre le problème ${neutre}"
+        sleep 2
+    fi
 
     # Désactivation IPv6
     echo -e "\n##############################################\n"
@@ -205,33 +218,55 @@ function config() {
     # Modif des droits TMUX
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Configuration de TMUX ---- ]${neutre}\n"
-    cp ./res/.tmux.conf /home/"$utilisateur"/
-    cp ./res/.tmux.conf /root/
-
-    chown "$utilisateur": /home/"$utilisateur"/.tmux.conf && echo -e "${vert} [ OK ] TMUX Configuré ${neutre}"
-    sleep 2
+    if [[ -f "/home/$utilisateur/.tmux.conf" ]] && [[ -f "/root/.tmux.conf" ]] ; then
+        cp ./res/.tmux.conf /home/"$utilisateur"/
+        cp ./res/.tmux.conf /root/
+        chown "$utilisateur": /home/"$utilisateur"/.tmux.conf && echo -e "${vert} [ OK ] TMUX Configuré ${neutre}"
+        sleep 2
+    fi
 
     # Conf vim
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Configuration de VIM ---- ]${neutre}\n"
-    echo -e "syntax on\nset number\nset autoindent\nset tabstop=6\nset showmode\nset mouse=a" >> /etc/vim/vimrc && echo -e "${vert} [ OK ] VIM Configuré ${neutre}"
-    decompte 2
+    grep -qi "syntax on" /etc/vim/vimrc
+    if [ "$?" != "0" ] ; then
+        echo -e "syntax on\nset number\nset autoindent\nset tabstop=6\nset showmode\nset mouse=a" >> /etc/vim/vimrc && echo -e "${vert} [ OK ] VIM Configuré ${neutre}"
+        decompte 2
+    fi
+
+    # Ajout Date + heure bash_history
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Configuration de bash_history en lui ajoutant la date et l'heure ---- ]${neutre}\n"
+    
+    grep -q 'HISTTIMEFORMAT' ~/.bashrc
+    if [ "$?" != "0" ] ; then 
+        echo 'export HISTTIMEFORMAT="[ %d/%m/%y-%T ] - "' >> ~/.bashrc
+        source ~/.bashrc    
+    fi
+    
+    grep -q 'HISTTIMEFORMAT' /home/"$utilisateur"/.bashrc
+    if [ "$?" != "0" ] ; then
+        echo 'export HISTTIMEFORMAT="[ %d/%m/%y-%T ] - "' >> /home/"$utilisateur"/.bashrc
+        source /home/"$utilisateur"/.bashrc
+    fi
 }
 
 ######## ARCHITECTURE DOSSIER   TRAVAIL FORENSIC
 
 function creerrepertoires() {
     #    Cas d'anlyse Windows
-    #   ----------------------
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Création des dossiers qui contiendront les points de montages des disques, RAM, Artefacts Windows et Linux ---- ]${neutre}\n"
-    mkdir -p /cases/{w_01,w_02,w_03,w_04}/{firefoxHistory,pst/PJ_outlook,prefetch,malware,mft,dump,evtx,timeline,hivelist,network,filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil windows : /cases Configuré ${neutre}"
-    mkdir -p /mnt/{usb1,usb2,win1,win2,linux1,linux2,encase1-E01,encase2-E01,ram1,ram2} && echo -e "${vert} [ OK ] accueil windows : /mnt Configuré ${neutre}"
+    if [[ ! -d "/cases" ]] ; then
+        mkdir -p /cases/artefacts/{win_Artefacts_01,win_Artefacts_02,win_Artefacts_03,win_Artefacts_04}/{firefoxHistory,pst/PJ_outlook,prefetch,malware,mft,dump,evtx,timeline,hivelist,network,filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil windows : /cases Configuré ${neutre}"
 
-    #    Cas d'analyse linux
-    #   ----------------------
-    mkdir -p /cases/{lx_01,lx_02,lx_03,lx_04}/{firefoxHistory,info_OS/{release,grub},cron,history/{cmd,viminfo},mail/{PJ_mail,},malware,dump,log,timeline,login_MDP,network/{ssh,},filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil linux : /cases Configuré ${neutre}"
-    sleep 3
+        #    Cas d'analyse linux
+        mkdir -p /cases/{linux_Artefacts_01,linux_Artefacts_02,linux_Artefacts_03,linux_Artefacts_04}/{firefoxHistory,info_OS/{release,grub},cron,history/{cmd,viminfo},mail/{PJ_mail,},malware,dump,log,timeline,login_MDP,network/{ssh,},filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil linux : /cases Configuré ${neutre}"
+
+        #    Pour accueil des montages HDD ...
+        mkdir -p /cases/montages/{usb1,usb2,usb3,usb4,win1,win2,linux1,linux2,encase1-E01,encase2-E01,encase3-E01,encase4-E01,ram1,ram2,raw1,raw2,raw3,raw4} && echo -e "${vert} [ OK ] accueil windows : /mnt Configuré ${neutre}"    
+        sleep 3
+    fi
 }
 
 ########  INSTALLER CLAMAV
@@ -239,11 +274,20 @@ function creerrepertoires() {
 function claminst() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de clamav ---- ]${neutre}\n"
-    apt update && apt install -y clamav && echo -e "${vert} [ OK ] Clamav installé ${neutre}"
-    systemctl stop clamav-freshclam.service && echo -e "${vert} [ OK ] Arrêt du service Clamav ${neutre}"
-    freshclam && echo -e "${vert} [ OK ] Mise à jour du service Clamav ${neutre}"
-    systemctl start clamav-freshclam.service && echo -e "${vert} [ OK ] Démarrage du service Clamav ${neutre}"
-    sleep 3
+    dpkg -l | awk -F " " '{print $2}' | grep -qEi "clamav$"
+    if [ "$?" != "0" ] ; then
+        apt update && apt install -y clamav && echo -e "${vert} [ OK ] Clamav installé ${neutre}"
+        systemctl stop clamav-freshclam.service && echo -e "${vert} [ OK ] Arrêt du service Clamav ${neutre}"
+        freshclam && echo -e "${vert} [ OK ] Mise à jour du service Clamav ${neutre}"
+        systemctl start clamav-freshclam.service && echo -e "${vert} [ OK ] Démarrage du service Clamav ${neutre}"
+        sleep 3
+    else
+        echo "${vert} [ OK ] Clamav est déjà installé poursuite avec la mise à jour ${neutre}"
+        sleep 2
+        systemctl stop clamav-freshclam.service && echo -e "${vert} [ OK ] Arrêt du service Clamav ${neutre}"
+        freshclam && echo -e "${vert} [ OK ] Mise à jour du service Clamav ${neutre}"
+        systemctl start clamav-freshclam.service && echo -e "${vert} [ OK ] Démarrage du service Clamav ${neutre}"
+    fi
 }
 
 ######## INSTALL GDB-PEDA
@@ -268,38 +312,39 @@ function gdbinst() {
 function volat2() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de Volatility 2.6 ---- ]${neutre}\n"
-    decompte 2
-    # Préparation avant installation
-    cd /home/"$utilisateur"/Documents/
-    echo "Début de l'installation et des mises à jour de Volatility 2.6 :"
-    echo "Installation des librairies"
-    apt update && apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 2.6 installés ${neutre}"
-    decompte 1
-    
-    # Installation de python 2
-    echo "Installation des outils python 2"
-    apt install -y python2 python2.7-dev libpython2-dev
-    curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
-    python2 get-pip.py
-    python2 -m pip install -U setuptools wheel  && echo -e "${vert} [ OK ] Outils python pour Volatility 2.6 installés ${neutre}"
-    decompte 1
-    
-    # Installation des modules volatility
-    echo "Install des dépendences"
-    python2 -m pip install -U distorm3 yara pycrypto pillow openpyxl ujson pytz ipython capstone
-    ln -s /usr/local/lib/python2.7/dist-packages/usr/lib/libyara.so /usr/lib/libyara.so  && echo -e "${vert} [ OK ] Dépendences de Volatility 2.6 installés ${neutre}"
-    decompte 1
-    
-    # Téléchargement et Installation de volatility 2.6
-    python2 -m pip install -U git+https://github.com/volatilityfoundation/volatility.git  && echo -e "${vert} [ OK ] Volatility 2.6 installé ${neutre}"
-    decompte 1
-    
-    # Renommage de fichier
-    mv /usr/local/bin/vol.py /usr/local/bin/vol2.py
-    
-    # Test
-    vol2.py -h
-    sleep 3
+    if [[ ! -f "/usr/local/bin/vol.py" ]] || [[ ! -f "/usr/local/bin/vol2.py" ]] ; then
+        # Préparation avant installation
+        cd /home/"$utilisateur"/Documents/
+        echo "Début de l'installation et des mises à jour de Volatility 2.6 :"
+        echo "Installation des librairies"
+        apt update && apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 2.6 installés ${neutre}"
+        decompte 1
+        
+        # Installation de python 2
+        echo "Installation des outils python 2"
+        apt install -y python2 python2.7-dev libpython2-dev
+        curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
+        python2 get-pip.py
+        python2 -m pip install -U setuptools wheel  && echo -e "${vert} [ OK ] Outils python pour Volatility 2.6 installés ${neutre}"
+        decompte 1
+        
+        # Installation des modules volatility
+        echo "Install des dépendences"
+        python2 -m pip install -U distorm3 yara pycrypto pillow openpyxl ujson pytz ipython capstone
+        ln -s /usr/local/lib/python2.7/dist-packages/usr/lib/libyara.so /usr/lib/libyara.so  && echo -e "${vert} [ OK ] Dépendences de Volatility 2.6 installés ${neutre}"
+        decompte 1
+        
+        # Téléchargement et Installation de volatility 2.6
+        python2 -m pip install -U git+https://github.com/volatilityfoundation/volatility.git  && echo -e "${vert} [ OK ] Volatility 2.6 installé ${neutre}"
+        decompte 1
+        
+        # Renommage de fichier
+        mv /usr/local/bin/vol.py /usr/local/bin/vol2.py
+        
+        # Test
+        vol2.py -h
+        sleep 3
+    fi
 }
         
 ########    INSTALLER VOLATILITY 3
@@ -307,43 +352,44 @@ function volat2() {
 function volat3() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de Volatility 3 ---- ]${neutre}\n"
-    decompte 2
+    if [[ ! -f "/usr/local/bin/vol.py" ]] || [[ ! -f "/usr/local/bin/vol3.py" ]] ; then
     
-    # Préparation avant installation
-    cd /home/"$utilisateur"/
-    echo "Début de l'installation et des mises à jour de Volatility 3:"
-    echo "Installation des librairies"
-    apt update && apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 3 installés ${neutre}"
-    decompte 1
+        # Préparation avant installation
+        cd /home/"$utilisateur"/
+        echo "Début de l'installation et des mises à jour de Volatility 3:"
+        echo "Installation des librairies"
+        apt update && apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 3 installés ${neutre}"
+        decompte 1
 
-    # Installation de python 3
-    echo "Installation des outils python 3"
-    apt install -y python3 python3-dev libpython3-dev python3-pip python3-setuptools python3-wheel git && echo -e "${vert} [ OK ] Outils python pour Volatility 3 installés ${neutre}"
+        # Installation de python 3
+        echo "Installation des outils python 3"
+        apt install -y python3 python3-dev libpython3-dev python3-pip python3-setuptools python3-wheel git && echo -e "${vert} [ OK ] Outils python pour Volatility 3 installés ${neutre}"
 
-    # Téléchargement de volatility 3
-    git clone https://github.com/volatilityfoundation/volatility3.git
-    mv volatility3 /home/"$utilisateur"/.volatility3
-    
-    # Téléchargement de la table des symbols windows
-    cd /home/"$utilisateur"/.volatility3/volatility3/symbols/
-    wget https://downloads.volatilityfoundation.org/volatility3/symbols/windows.zip
-    unzip windows.zip
-    
-    # Renommage 
-    cd /home/"$utilisateur"/.volatility3
-    mv vol.py vol3.py
-    chmod -R 750 ../.volatility3/
-    chown -R "$utilisateur": ../.volatility3/
-    
-    # Installation des modules volatility
-    pip3 install -r requirements.txt
-    
-    # Lien pour lancer l'application
-    ln -s /home/"$utilisateur"/.volatility3/vol3.py /usr/local/bin/vol3.py && echo -e "${vert} [ OK ] Volatility 3 téléchargé ${neutre}"
-    
-    # Test
-    vol3.py -h
-    sleep 3
+        # Téléchargement de volatility 3
+        git clone https://github.com/volatilityfoundation/volatility3.git
+        mv volatility3 /home/"$utilisateur"/.volatility3
+        
+        # Téléchargement de la table des symbols windows
+        cd /home/"$utilisateur"/.volatility3/volatility3/symbols/
+        wget https://downloads.volatilityfoundation.org/volatility3/symbols/windows.zip
+        unzip windows.zip
+        
+        # Renommage 
+        cd /home/"$utilisateur"/.volatility3
+        mv vol.py vol3.py
+        chmod -R 750 ../.volatility3/
+        chown -R "$utilisateur": ../.volatility3/
+        
+        # Installation des modules volatility
+        pip3 install -r requirements.txt
+        
+        # Lien pour lancer l'application
+        ln -s /home/"$utilisateur"/.volatility3/vol3.py /usr/local/bin/vol3.py && echo -e "${vert} [ OK ] Volatility 3 téléchargé ${neutre}"
+        
+        # Test
+        vol3.py -h
+        sleep 3
+    fi
 }
 
 
@@ -353,35 +399,37 @@ function reginst() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de Regripper V3.0 ---- ]${neutre}\n"
     cd "$cheminInstall"
-    apt update && apt install -y git libparse-win32registry-perl -y
-    
-    # Téléchargement de RegRipper3.0 et déplacement des fichiers dans /usr/local/src/regripper
-    cd /usr/local/src/
-    rm -r /usr/local/src/regripper/ 2>/dev/nul
-    rm -r /usr/share/regripper/plugins 2>/dev/nul
-    git clone https://github.com/keydet89/RegRipper3.0.git 
-    mv RegRipper3.0 regripper
-    mkdir /usr/share/regripper
-    ln -s  /usr/local/src/regripper/plugins /usr/share/regripper/plugins 2>/dev/nul
-    chmod 755 regripper/* || exit
-    
-    # Copier les modules perl spécifiques à RegRipper 
-    cp regripper/File.pm /usr/share/perl5/Parse/Win32Registry/WinNT/File.pm
-    cp regripper/Key.pm /usr/share/perl5/Parse/Win32Registry/WinNT/Key.pm
-    cp regripper/Base.pm /usr/share/perl5/Parse/Win32Registry/Base.pm
+    if [[ ! -f "/usr/local/bin/rip.pl" ]] ; then
+        apt update && apt install -y git libparse-win32registry-perl -y
+        
+        # Téléchargement de RegRipper3.0 et déplacement des fichiers dans /usr/local/src/regripper
+        cd /usr/local/src/
+        rm -r /usr/local/src/regripper/ 2>/dev/nul
+        rm -r /usr/share/regripper/plugins 2>/dev/nul
+        git clone https://github.com/keydet89/RegRipper3.0.git 
+        mv RegRipper3.0 regripper
+        mkdir /usr/share/regripper
+        ln -s  /usr/local/src/regripper/plugins /usr/share/regripper/plugins 2>/dev/nul
+        chmod 755 regripper/* || exit
+        
+        # Copier les modules perl spécifiques à RegRipper 
+        cp regripper/File.pm /usr/share/perl5/Parse/Win32Registry/WinNT/File.pm
+        cp regripper/Key.pm /usr/share/perl5/Parse/Win32Registry/WinNT/Key.pm
+        cp regripper/Base.pm /usr/share/perl5/Parse/Win32Registry/Base.pm
 
-    # Modifier le fichierrip.pl.linux depuis le fichier original original rip.pl
-    cp regripper/rip.pl regripper/rip.pl.linux || exit
-    sed -i '77i my \$plugindir \= \"\/usr\/share\/regripper\/plugins\/\"\;' /usr/local/src/regripper/rip.pl.linux 
-    sed -i '/^#! c:[\]perl[\]bin[\]perl.exe/d' /usr/local/src/regripper/rip.pl.linux
-    sed -i "1i #!$(which perl)" /usr/local/src/regripper/rip.pl.linux
-    sed -i '2i use lib qw(/usr/lib/perl5/);' /usr/local/src/regripper/rip.pl.linux
-    md5sum /usr/local/src/regripper/rip.pl.linux && echo -e "${vert} rip.pl a été créé"
+        # Modifier le fichierrip.pl.linux depuis le fichier original original rip.pl
+        cp regripper/rip.pl regripper/rip.pl.linux || exit
+        sed -i '77i my \$plugindir \= \"\/usr\/share\/regripper\/plugins\/\"\;' /usr/local/src/regripper/rip.pl.linux 
+        sed -i '/^#! c:[\]perl[\]bin[\]perl.exe/d' /usr/local/src/regripper/rip.pl.linux
+        sed -i "1i #!$(which perl)" /usr/local/src/regripper/rip.pl.linux
+        sed -i '2i use lib qw(/usr/lib/perl5/);' /usr/local/src/regripper/rip.pl.linux
+        md5sum /usr/local/src/regripper/rip.pl.linux && echo -e "${vert} rip.pl a été créé"
 
-    # Copier rip.pl.linux dans /usr/local/bin/rip.pl
-    cp regripper/rip.pl.linux /usr/local/bin/rip.pl && echo -e "${vert}Succès /usr/local/src/regripper/rip.pl.linux copié dans /usr/local/bin/rip.pl${neutre}"
-    /usr/local/bin/rip.pl  && echo -e "${vert}\nrip.pl a été mis dans : /usr/local/bin/rip.pl !\n\nLe fichier d'origine se trouve dans : /usr/local/src/regripper/rip.pl\n\n${neutre}"
-    sleep 3
+        # Copier rip.pl.linux dans /usr/local/bin/rip.pl
+        cp regripper/rip.pl.linux /usr/local/bin/rip.pl && echo -e "${vert}Succès /usr/local/src/regripper/rip.pl.linux copié dans /usr/local/bin/rip.pl${neutre}"
+        /usr/local/bin/rip.pl  && echo -e "${vert}\nrip.pl a été mis dans : /usr/local/bin/rip.pl !\n\nLe fichier d'origine se trouve dans : /usr/local/src/regripper/rip.pl\n\n${neutre}"
+        sleep 3
+    fi
 }
 
 ########    LES OUTILS DE BUREAUTIQUE
@@ -449,6 +497,28 @@ function sleuthkitInstall() {
     sleep 3
 }
 
+########    INSTALLER LES OUTILS DE LOGS
+
+function loginstall() {
+    # auditd 
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation des outils de log ---- ]${neutre}\n"
+    cd "$cheminInstall"
+    mjour
+    apt install -y auditd 
+    
+    # evtx2log by Yakisyst3m
+    apt install -y rename libevtx-utils # dépendances
+    git clone https://github.com/yakisyst3m/evtx2log.git
+    mv evtx2log/ res/
+    cp res/evtx2log/evtx2log.sh /opt/
+    chmod 755 /opt/evtx2log.sh
+    ln -s /opt/evtx2log.sh /usr/local/bin/
+    evtx2log.sh
+    sleep 3
+}
+
+
 ########    INSTALLER L'APPLICATION PYTHON IMAGEMOUNTER - MOTAGE AUTO E01
 
 function imagemounterE01() {
@@ -457,7 +527,10 @@ function imagemounterE01() {
     cd "$cheminInstall"
     
     # Dépendences
-    apt update && apt install -y python3-pip python-setuptools xmount ewf-tools afflib-tools sleuthkit disktype qemu-utils avfs xfsprogs lvm2 vmfs-tools mtd-tools squashfs-tools mdadm cryptsetup libbde-utils libvshadow-utils 
+    apt update && apt install -y python3-pip python-setuptools xmount ewf-tools afflib-tools disktype qemu-utils avfs xfsprogs lvm2 vmfs-tools mtd-tools squashfs-tools mdadm cryptsetup libbde-utils libvshadow-utils 
+    if [[ -f "/usr/local/bin/fls" ]] ; then
+        apt install -y sleuthkit
+    fi    
     
     # Installation
     pip3 install pytsk3 python-magic imagemounter && echo -e "${vert} [ OK ] ImageMounter installé - Pour lancer : imount image.E01 ${neutre}"
@@ -517,7 +590,7 @@ function vbox() {
         if [ "$VERSION_OS" = 'debian' ] ; then
             echo "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" >> /etc/apt/sources.list
         fi
-        apt update && apt -y full-upgrade
+        mjour
 
         # Installation de virtualbox
         echo -e "${jaune}[ Installation de virtualbox ]${neutre}"
@@ -575,87 +648,97 @@ echo -e "${vert}             _\::\ \__    \:::._\/     \::\ \  ${neutre}"
 echo -e "${vert}            /__\::\__/\    \:\ \        \::\ \ ${neutre}"
 echo -e "${vert}            \________\/     \_\/         \__\/  ${neutre}"               
 echo " "
-echo -e "\e[2C${bleu}---${neutre}----${rouge}----   [ ${vert}I${rouge}NSTALL ${vert}F${rouge}ORENSICS ${vert}T${rouge}OOLS ]    ${bleu}---${neutre}----${rouge}----${neutre}"
+echo -e "\e[2C${bleu}---${neutre}----${rouge}----   [ ${bleu}INSTALL ${neutre}FORENSICS ${rouge}TOOLS${bleu} ]    ---${neutre}----${rouge}----${neutre}\t$versionIFT"
 echo " "
     #echo -e "${bleu}Faites votre choix d'installation :${neutre}"
     #echo -e "${vert}-----------------------------------${neutre}"
     echo -e "\e[3C${bleu}[ --    ${souligne}INSTALLATION DE BASE${neutrePolice}     -- ]${neutre}"    
-    echo -e "\t[  ${vert}1${neutre} ] - Modification des source.list + Mise à jour des paquets"
-    echo -e "\t[  ${vert}2${neutre} ] - Installation des logiciels de base"
-    echo -e "\t[  ${vert}3${neutre} ] - Configuration des applications : Wireshark / déscativation IPv6 / Activation du pavé numérique / Tmux / Vim"
-    echo -e "\t[  ${vert}4${neutre} ] - Création de l'architecture des dossiers : pour montage des disques windows et linux à analyser"
+    echo -e "\t[  ${vert}0${neutre} ] - Modification du fichier source.list HTTP vers HTTPS"    
+    echo -e "\t[  ${vert}1${neutre} ] - Mise à jour des paquets"
+    echo -e "\t[  ${vert}2${neutre} ] - Installation des logiciels de base + configuration des applications : Wireshark / déscativation IPv6 / Activation du pavé numérique / Tmux / Vim / Date-Heure bash_history"
+    echo -e "\t[  ${vert}3${neutre} ] - Création de l'architecture des dossiers : pour montage des disques windows et linux à analyser"
+    
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANTI-VIRUS${neutrePolice}     -- ]${neutre}"    
-    echo -e "\t[  ${vert}5${neutre} ] - Installation de clamav + Mise à jour des signatures AV"
+    echo -e "\t[  ${vert}10${neutre} ] - Installation de clamav + Mise à jour des signatures AV"
+    
     echo -e "\n\e[3C${bleu}[ --    ${souligne}REVERSE ENGINEERING${neutrePolice}     -- ]${neutre}"
-    echo -e "\t[  ${vert}6${neutre} ] - Installation des outils de Reverse : gdb-peda"
+    echo -e "\t[  ${vert}20${neutre} ] - Installation des outils de Reverse : gdb-peda"
+    
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE RAM${neutrePolice}     -- ]${neutre}"    
-    echo -e "\t[  ${vert}7${neutre} ] - Installation de volatility 2.6"
-    echo -e "\t[  ${vert}8${neutre} ] - Installation de volatility 3"
+    echo -e "\t[  ${vert}30${neutre} ] - Installation de volatility 2.6"
+    echo -e "\t[  ${vert}31${neutre} ] - Installation de volatility 3"
+    
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE REGISTRE${neutrePolice}     -- ]${neutre}"
-    echo -e "\t[  ${vert}9${neutre} ] - Installation de Regripper : analyse registre Windows"
+    echo -e "\t[  ${vert}40${neutre} ] - Installation de Regripper : analyse registre Windows"
+    
     echo -e "\n\e[3C${bleu}[ --    ${souligne}OUTILS BUREAUTIQUE${neutrePolice}     -- ]${neutre}"
-    echo -e "\t[ ${vert}10${neutre} ] - Installation des outils de bureautique : thunderbird / readpst / msgconvert"
+    echo -e "\t[ ${vert}50${neutre} ] - Installation des outils de bureautique : thunderbird / readpst / msgconvert"
+    
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE DISQUE  + MFT + TIMELINE${neutrePolice}   -- ]${neutre}"
-    echo -e "\t[ ${vert}11${neutre} ] - Installation des outils de disques : guymager / qemu / suite ewf / hdparm / sdparm "
-    echo -e "\t[ ${vert}12${neutre} ] - Installation de l'outil de disque E01 : Pyhton ImageMounter pour montage auto d'une image E01 encase"
-    echo -e "\t[ ${vert}13${neutre} ] - Installation des Outils de Timeline et Artefacts Windows : La suite plaso / ewf / olevba3 / prefetch / ShimCacheParser"
-    echo -e "\t[ ${vert}14${neutre} ] - Installation de la suite sleuthkit : mmls / fls / icat / mactime"
+    echo -e "\t[ ${vert}60${neutre} ] - Installation des outils de disques : guymager / qemu / suite ewf / hdparm / sdparm "
+    echo -e "\t[ ${vert}61${neutre} ] - Installation de l'outil de disque E01 : Pyhton ImageMounter pour montage auto d'une image E01 encase"
+    echo -e "\t[ ${vert}62${neutre} ] - Installation des Outils de Timeline et Artefacts Windows : La suite plaso / ewf / olevba3 / prefetch / ShimCacheParser"
+    echo -e "\t[ ${vert}63${neutre} ] - Installation de la suite sleuthkit : mmls / fls / icat / mactime"
+    
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}LOG - CONVERSION - PARSING - COLLECTE${neutrePolice}   -- ]${neutre}"
+    echo -e "\t[ ${vert}70${neutre} ] - Installation des outils d'analyse de log : auditd / evtx2log"
+    
     echo -e "\n\e[3C${bleu}[ --    ${souligne}OUTILS FORENSICS SUPPLEMENTAIRES${neutrePolice}     -- ]${neutre}"    
-    echo -e "\t[ ${vert}15${neutre} ] - Installation du paquet : forensics-all"
-    echo -e "\t[ ${vert}16${neutre} ] - Installation du paquet : forensics-extra"
-    echo -e "\t[ ${vert}17${neutre} ] - Installation du paquet : forensics-extra-gui"
+    echo -e "\t[ ${vert}80${neutre} ] - Installation du paquet : forensics-all"
+    echo -e "\t[ ${vert}81${neutre} ] - Installation du paquet : forensics-extra"
+    echo -e "\t[ ${vert}82${neutre} ] - Installation du paquet : forensics-extra-gui"
+    
     echo -e "\n\e[3C${bleu}[ --    ${souligne}VIRTUALISATION${neutrePolice}     -- ]${neutre}"
-    echo -e "\t[ ${vert}18${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
+    echo -e "\t[ ${vert}90${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
 
-    echo -e "\n\t[ ${vert}100${neutre} ] - ${vert}Tout installer${neutre}"
+    echo -e "\n\t[ ${vert}100${neutre} ] - ${vert}Tout installer (Sauf N°0 sourcelist)${neutre}"
     echo -e "\t[  ${rouge}F${neutre} ] - Taper F pour finaliser l'installation..."
     echo -e "\t---> Dans tous les cas, une fois vos installations choisies, terminer par l'option [ F ]\n"
     echo -e "\e[20C[  ${rouge}Q${neutre} ] - Taper ${rouge}Q${neutre} pour ${rouge}quitter${neutre}...\n"
     echo -e "\e[3CEntrer votre choix : \c"
     read INSTALL
-    #read -p "Entrer votre choix : " INSTALL
- 
     echo
-
     case $INSTALL in
+    "0")
+        sourcelist ;;
     "1")
         mjour ;;
     "2")
-        installbase ;;
+        installbase ; config;;
     "3")
-        config ;;
-    "4")
         creerrepertoires ;;
-    "5")
-        claminst ;;
-    "6")
-        gdbinst ;;
-    "7")
-        volat2 ; validChang ;;
-    "8")
-        volat3 ; validChang ;;
-    "9")
-        reginst ;;
     "10")
+        claminst ;;
+    "20")
+        gdbinst ;;
+    "30")
+        volat2 ; validChang ;;
+    "31")
+        volat3 ; validChang ;;
+    "40")
+        reginst ;;
+    "50")
         burinst ;;
-    "11")
+    "60")
         diskinst ;;
-    "12")
+    "61")
         imagemounterE01 ;;
-    "13")
+    "62")
         mftinst ;;
-    "14")
+    "63")
         sleuthkitInstall ;;
-    "15")        
+    "70")
+        loginstall ;;        
+    "80")        
         forall ;;
-    "16")
+    "81")
         forextra ;;
-    "17")
+    "82")
         forextragui ;;
-    "18")
+    "90")
         vbox ;;
     "100")
-        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; forall ; forextra ; forextragui ; vbox ;;
+        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; loginstall ; forall ; forextra ; forextragui ; vbox ;;
     f|F) break ;;
     q|Q) exit ;;
     *) continue ;;
