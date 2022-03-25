@@ -6,7 +6,7 @@
 
 ## 1 - Présentation :
 **Il y a 1 Script de post-installation pour la configuration automatique des outils Forensics pour Debian et Ubuntu :**    
-Une fois Debian ou Ubuntu installé, il suffit de lancer ce script pour obtenir les logiciels nécessaires pour faire à minima du forensic !
+- Une fois Debian ou Ubuntu installé, il suffit de lancer ce script pour obtenir les logiciels nécessaires pour faire à minima du forensic !
 
 
 ## 2 - Installation :
