@@ -18,6 +18,8 @@ if [ "$uidutilisateur" = "0" ] ; then
         chown -R "$utilisateur": /home/"$utilisateur"/Documents/
         ./Post_install-FSICS_PRO.sh
     else
+        rm -rf "$cheminInstall"
+        cp -r ./* "$cheminInstall"
         cd "$cheminInstall"
         chmod -R 750 /home/"$utilisateur"/Documents/
         chown -R "$utilisateur": /home/"$utilisateur"/Documents/

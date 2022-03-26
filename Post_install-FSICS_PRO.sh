@@ -16,11 +16,12 @@
 # 2022 03 18    v2.1-7 Python ImageMounter
 # 2022 03 22    v2.1-8 Correction vol2.py + vol3.py + ShimCacheParser.py
 # 2022 03 25    v2.1-8.1 Ajout outils log + amélioration code
+# 2022 03 26    v2.1-8.2 Ajout de mft_dump 
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
 # VARIABLES : LES VERSIONS / CHEMINS / COULEURS
-    versionIFT="v2.1-8.1 du 25 mars 2022"
+    versionIFT="v2.1-8.2 du 26 mars 2022"
     
     utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
     VERSION_OS=$(grep -E '^ID=' /etc/os-release | cut -d "=" -f2)
@@ -497,6 +498,22 @@ function sleuthkitInstall() {
     sleep 3
 }
 
+########    INSTALLER MFT DUMP      https://github.com/omerbenamram/mft
+
+function mftdumpinst() {
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de mft_dump ---- ]${neutre}\n"
+    if [[ ! -f "/usr/local/bin/mft_dump" ]] ; then
+        cd "$cheminInstall"
+        wget --progress=bar https://github.com/omerbenamram/mft/releases/download/v0.6.0/mft_dump-v0.6.0-x86_64-unknown-linux-gnu -O $cheminInstall/res/mft_dump
+        cp res/mft_dump /opt
+        chmod +x /opt/mft_dump
+        ln -s /opt/mft_dump /usr/local/bin/mft_dump
+        mft_dump -h && echo -e "${vert} [ OK ] mft_dump installé ${neutre}"
+        sleep 3
+    fi
+}
+
 ########    INSTALLER LES OUTILS DE LOGS
 
 function loginstall() {
@@ -679,6 +696,7 @@ echo " "
     echo -e "\t[ ${vert}61${neutre} ] - Installation de l'outil de disque E01 : Pyhton ImageMounter pour montage auto d'une image E01 encase"
     echo -e "\t[ ${vert}62${neutre} ] - Installation des Outils de Timeline et Artefacts Windows : La suite plaso / ewf / olevba3 / prefetch / ShimCacheParser"
     echo -e "\t[ ${vert}63${neutre} ] - Installation de la suite sleuthkit : mmls / fls / icat / mactime"
+    echo -e "\t[ ${vert}64${neutre} ] - Installation de mft_dump : parser le fichier \$MFT (https://github.com/omerbenamram/mft)"
     
     echo -e "\n\e[3C${bleu}[ --    ${souligne}LOG - CONVERSION - PARSING - COLLECTE${neutrePolice}${bleu}   -- ]${neutre}"
     echo -e "\t[ ${vert}70${neutre} ] - Installation des outils d'analyse de log : auditd / evtx2log"
@@ -727,6 +745,8 @@ echo " "
         mftinst ;;
     "63")
         sleuthkitInstall ;;
+    "64")
+        mftdumpinst ;;        
     "70")
         loginstall ;;        
     "80")        
@@ -738,7 +758,9 @@ echo " "
     "90")
         vbox ;;
     "100")
-        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; loginstall ; forall ; forextra ; forextragui ; vbox ;;
+        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ;\
+        reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; mftdumpinst ;\
+        loginstall ; forall ; forextra ; forextragui ; vbox ;;
     f|F) break ;;
     q|Q) exit ;;
     *) continue ;;
