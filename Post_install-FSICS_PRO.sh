@@ -697,13 +697,13 @@ function validChang() {
 
 clear
 while true ; do 
-echo -e "${vert}           ________      ______     _________ ${neutre}"
-echo -e "${vert}          /_______/\    /_____/\   /________/\ ${neutre}"
-echo -e "${vert}          \__.::._\/    \::::_\/_  \__.::.__\/ ${neutre}"
-echo -e "${vert}             \::\ \      \:\/___/\    \::\ \   ${neutre}"
-echo -e "${vert}             _\::\ \__    \:::._\/     \::\ \  ${neutre}"
-echo -e "${vert}            /__\::\__/\    \:\ \        \::\ \ ${neutre}"
-echo -e "${vert}            \________\/     \_\/         \__\/  ${neutre}"               
+echo -e "${bleu}           ________     ${neutre} ______     ${rouge}_________ ${neutre}"
+echo -e "${bleu}          /_______/\    ${neutre}/_____/\   ${rouge}/________/\ ${neutre}"
+echo -e "${bleu}          \__.::._\/    ${neutre}\::::_\/_  ${rouge}\__.::.__\/ ${neutre}"
+echo -e "${bleu}             \::\ \      ${neutre}\:\/___/\    ${rouge}\::\ \   ${neutre}"
+echo -e "${bleu}             _\::\ \__    ${neutre}\:::._\/     ${rouge}\::\ \  ${neutre}"
+echo -e "${bleu}            /__\::\__/\    ${neutre}\:\ \        ${rouge}\::\ \ ${neutre}"
+echo -e "${bleu}            \________\/     ${neutre}\_\/         ${rouge}\__\/  ${neutre}"               
 echo " "
 echo -e "\e[2C${bleu}---${neutre}----${rouge}----   [ ${bleu}INSTALL ${neutre}FORENSICS ${rouge}TOOLS${bleu} ]    ---${neutre}----${rouge}----${neutre}\t$versionIFT"
 echo " "
