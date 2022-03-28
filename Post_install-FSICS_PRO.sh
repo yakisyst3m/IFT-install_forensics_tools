@@ -16,7 +16,8 @@
 # 2022 03 18    v2.1-7 Python ImageMounter
 # 2022 03 22    v2.1-8 Correction vol2.py + vol3.py + ShimCacheParser.py
 # 2022 03 25    v2.1-8.1 Ajout outils log + amélioration code
-# 2022 03 26    v2.1-8.2 Ajout de mft_dump 
+# 2022 03 26    v2.1-8.2 Ajout de mft_dump
+# 2022 03 28    v2.1-8.3 AJout csv2xlsx.py
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
@@ -635,6 +636,23 @@ function vbox() {
     fi
 }
 
+########    OUTILS DE CONVERSIONS
+
+convertinstall() {
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de csv2xlsx.py ---- ]${neutre}\n"
+    if [[ ! -f "/usr/local/bin/csv2xlsx.py" ]] ; then
+        cd "$cheminInstall"
+        cp res/csv2xlsx.py /opt
+        chmod +x /opt/csv2xlsx.py
+        ln -s /opt/csv2xlsx.py /usr/local/bin && echo -e "${vert} [ OK ] csv2xlsx.py installé ${neutre}"
+        sleep 3
+    else
+        echo -e "${rouge} [ OK ] csv2xlsx.py est déjà installé ${neutre}"
+    fi
+}
+
+
 ######## VALIDATION DES CHANGEMENTS ###########################################################
 
 function validChang() {
@@ -709,7 +727,10 @@ echo " "
     echo -e "\n\e[3C${bleu}[ --    ${souligne}VIRTUALISATION${neutrePolice}${bleu}     -- ]${neutre}"
     echo -e "\t[ ${vert}90${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
 
-    echo -e "\n\t[ ${vert}100${neutre} ] - ${vert}Tout installer (Sauf N°0 sourcelist)${neutre}"
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}CONVERTISSEURS${neutrePolice}${bleu}     -- ]${neutre}"
+    echo -e "\t[ ${vert}100${neutre} ] - Python3 : convertir CSV en XLSX - délimiteur TAB"
+
+    echo -e "\n\t[ ${vert}200${neutre} ] - ${vert}Tout installer (Sauf N°0 sourcelist)${neutre}"
     echo -e "\t[  ${rouge}F${neutre}  ] - Taper F pour finaliser l'installation..."
     echo -e "\t\t---> Dans tous les cas, une fois vos installations choisies, terminer par l'option [ F ]\n"
     echo -e "\e[20C[  ${rouge}Q${neutre}  ] - Taper ${rouge}Q${neutre} pour ${rouge}quitter${neutre}...\n"
@@ -757,10 +778,12 @@ echo " "
         forextragui ;;
     "90")
         vbox ;;
-    "100")
+   "100")
+        convertinstall ;;    
+   "200")
         mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ;\
         reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; mftdumpinst ;\
-        loginstall ; forall ; forextra ; forextragui ; vbox ;;
+        loginstall ; forall ; forextra ; forextragui ; vbox ; convertinstall ;;
     f|F) break ;;
     q|Q) exit ;;
     *) continue ;;
