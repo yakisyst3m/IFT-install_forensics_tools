@@ -55,7 +55,7 @@
 - ImageMounter (montage auto des images .E01)  
 *Exemple :*  
 ```
-imout image.E01
+imount image.E01
 ```
 
 :radio_button: Hexadécimal :
