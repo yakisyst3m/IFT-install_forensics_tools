@@ -19,6 +19,7 @@ if [ "$uidutilisateur" = "0" ] ; then
         ./Post_install-FSICS_PRO.sh
     else
         rm -rf "$cheminInstall"
+        mkdir "$cheminInstall"
         cp -r ./* "$cheminInstall"
         cd "$cheminInstall"
         chmod -R 750 /home/"$utilisateur"/Documents/
