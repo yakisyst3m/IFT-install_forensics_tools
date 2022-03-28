@@ -17,12 +17,12 @@
 # 2022 03 22    v2.1-8 Correction vol2.py + vol3.py + ShimCacheParser.py
 # 2022 03 25    v2.1-8.1 Ajout outils log + amélioration code
 # 2022 03 26    v2.1-8.2 Ajout de mft_dump
-# 2022 03 28    v2.1-8.3 AJout csv2xlsx.py
+# 2022 03 28    v2.1-8.3 AJout csv2xlsx.py + ramParserVolatility3
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
 # VARIABLES : LES VERSIONS / CHEMINS / COULEURS
-    versionIFT="v2.1-8.2 du 26 mars 2022"
+    versionIFT="v2.1-8.3 du 28 mars 2022"
     
     utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
     VERSION_OS=$(grep -E '^ID=' /etc/os-release | cut -d "=" -f2)
@@ -394,6 +394,27 @@ function volat3() {
     fi
 }
 
+########    INSTALLER RAM PARSER de Yakisyst3m
+
+ramParserinstall() {
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de ramParser ---- ]${neutre}\n"
+    if [[ -f "/usr/local/bin/vol3.py " ]] || [[ -f "/usr/local/bin/csv2xlsx.py" ]] ; then
+        if [[ ! -f "/usr/local/bin/ramParserVolatility3" ]] ; then
+            cd "$cheminInstall"
+            cp res/ramParserVolatility3.sh /opt
+            chmod +x /opt/ramParserVolatility3.sh
+            ln -s /opt/ramParserVolatility3.sh /usr/local/bin/ramParserVolatility3 && echo -e "${vert} [ OK ] ramParserVolatility3 installé ${neutre}"
+            sleep 3
+        else 
+            echo -e "${vert} [ OK ] ramParserVolatility3 est déjà installé ${neutre}"
+            sleep 3
+        fi
+    else
+        echo -e "${rouge} [ NOK ] Volatility3 ou csv2xlsx.py : au moins une des 2 applications n'est pas installé ${neutre}"
+        sleep 3
+    fi    
+}
 
 ########    INSTALLER DES OUTILS REGRIPPER V3
 
@@ -649,7 +670,7 @@ convertinstall() {
         ln -s /opt/csv2xlsx.py /usr/local/bin && echo -e "${vert} [ OK ] csv2xlsx.py installé ${neutre}"
         sleep 3
     else
-        echo -e "${rouge} [ OK ] csv2xlsx.py est déjà installé ${neutre}"
+        echo -e "${rouge} [ NOK ] csv2xlsx.py est déjà installé ${neutre}"
     fi
 }
 
@@ -703,6 +724,7 @@ echo " "
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE RAM${neutrePolice}${bleu}     -- ]${neutre}"    
     echo -e "\t[ ${vert}30${neutre} ] - Installation de volatility 2.6"
     echo -e "\t[ ${vert}31${neutre} ] - Installation de volatility 3"
+    echo -e "\t[ ${vert}32${neutre} ] - Installation de ramParserVolatility3 : export CSV + XLSX du parsing da la RAM.raw (Installer avant : volatility 3 N°31 + \"csv2xlsx.py\" N°100)"
     
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE REGISTRE${neutrePolice}${bleu}     -- ]${neutre}"
     echo -e "\t[ ${vert}40${neutre} ] - Installation de Regripper : analyse registre Windows"
@@ -715,10 +737,10 @@ echo " "
     echo -e "\t[ ${vert}61${neutre} ] - Installation de l'outil de disque E01 : Pyhton ImageMounter pour montage auto d'une image E01 encase"
     echo -e "\t[ ${vert}62${neutre} ] - Installation des Outils de Timeline et Artefacts Windows : La suite plaso / ewf / olevba3 / prefetch / ShimCacheParser"
     echo -e "\t[ ${vert}63${neutre} ] - Installation de la suite sleuthkit : mmls / fls / icat / mactime"
-    echo -e "\t[ ${vert}64${neutre} ] - Installation de mft_dump : parser le fichier \$MFT (https://github.com/omerbenamram/mft)"
+    echo -e "\t[ ${vert}64${neutre} ] - Installation de mft_dump : parser le fichier \$MFT      (https://github.com/omerbenamram/mft)"
     
     echo -e "\n\e[3C${bleu}[ --    ${souligne}LOG - CONVERSION - PARSING - COLLECTE${neutrePolice}${bleu}   -- ]${neutre}"
-    echo -e "\t[ ${vert}70${neutre} ] - Installation des outils d'analyse de log : auditd / evtx2log"
+    echo -e "\t[ ${vert}70${neutre} ] - Installation des outils d'analyse de log : auditd / evtx2log    (https://github.com/yakisyst3m/evtx2log)"
     
     echo -e "\n\e[3C${bleu}[ --    ${souligne}OUTILS FORENSICS SUPPLEMENTAIRES${neutrePolice}${bleu}     -- ]${neutre}"    
     echo -e "\t[ ${vert}80${neutre} ] - Installation du paquet : forensics-all"
@@ -729,7 +751,7 @@ echo " "
     echo -e "\t[ ${vert}90${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
 
     echo -e "\n\e[3C${bleu}[ --    ${souligne}CONVERTISSEURS${neutrePolice}${bleu}     -- ]${neutre}"
-    echo -e "\t[ ${vert}100${neutre} ] - Python3 : convertir CSV en XLSX - délimiteur TAB"
+    echo -e "\t[ ${vert}100${neutre} ] - Python3 : \"csv2xlsx.py\" convertir CSV en XLSX - délimiteur TAB      (https://gist.github.com/konrad/4154786)"
 
     echo -e "\n\t[ ${vert}200${neutre} ] - ${vert}Tout installer (Sauf N°0 sourcelist)${neutre}"
     echo -e "\t[  ${rouge}F${neutre}  ] - Taper F pour finaliser l'installation..."
@@ -755,6 +777,8 @@ echo " "
         volat2 ; validChang ;;
     "31")
         volat3 ; validChang ;;
+    "32")
+        ramParserinstall ;;
     "40")
         reginst ;;
     "50")
@@ -782,7 +806,7 @@ echo " "
    "100")
         convertinstall ;;    
    "200")
-        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ;\
+        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; ramParserinstall ;\
         reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; mftdumpinst ;\
         loginstall ; forall ; forextra ; forextragui ; vbox ; convertinstall ;;
     f|F) break ;;

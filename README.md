@@ -52,6 +52,11 @@
 - guymager
 - hdparm
 - sdparm
+- ImageMounter (montage auto des images .E01)  
+*Exemple :*  
+```
+imout image.E01
+```
 
 :radio_button: Hexadécimal :
 - wxhexeditor
@@ -62,12 +67,12 @@
 
 :radio_button: FileCarving (récupération de données) :
 - foremost  
-*Exemple :*
+*Exemple :*  
 ```
 foremost -v -t all -i usb.raw -o /cases/w_01/filecarving/foremost/
 ```
 - photorec  
-*Exemple :*
+*Exemple :*  
 ```
 photorec TP1-Disque.img 
 ```
@@ -79,10 +84,19 @@ photorec TP1-Disque.img
 - volatility 2.6
 ```
 vol2.py -h
+
 ```  
-- ou volatility 3
+- volatility 3
 ```
 vol3.py -h
+``` 
+- ramParser  
+Placer toutes les images .raw des mémoires RAM dans un dossier et lancer l'application.  
+L'application va faire l'export CSV et XLSX des résultats de chacun des plugins (configurés dans le fichier /usr/local/bin/ramParserVolatility3) dans un dossier nommé par le nom de l'image.raw.  
+Il faut lancer l'application sans paramètre car elle cherche en boucle dans le dossier tous les .raw.  
+```
+cd RAM/
+ramParserVolatility3 
 ```  
 
 :radio_button: Artefacts Windows - LES RUCHES :
@@ -146,6 +160,11 @@ icat -o [offset_partition] dump_disque.raw 0 > /cases/w_01/mft/mft.raw
 ```
 analyzeMFT.py -f /cases/w_01/mft/mft.raw -o /cases/w_01/mft/mft.csv
 ```
+- mft_dump (https://github.com/omerbenamram/mft)
+`mft_dump <input_file>` fichier de sortie : JSON.
+`mft_dump -o csv <input_file>` fichier de sortie : CSV. 
+`mft_dump --extract-resident-streams <output_directory> -o json <input_file>` extraira tous les flux résidents dans MFT vers des fichiers dans <output_directory>.  
+
 - log2timeline (plaso) `Créer une timeline semi-auto en 2 étapes : étape 1/2`
 - psort (plaso) `Créer une timeline semi-auto en 2 étapes : étape 2/2`  
 *Exemple création Timeline:*
