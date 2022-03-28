@@ -160,10 +160,20 @@ icat -o [offset_partition] dump_disque.raw 0 > /cases/w_01/mft/mft.raw
 ```
 analyzeMFT.py -f /cases/w_01/mft/mft.raw -o /cases/w_01/mft/mft.csv
 ```
-- mft_dump (https://github.com/omerbenamram/mft)  
-```mft_dump <input_file>``` fichier de sortie : JSON.  
-```mft_dump -o csv <input_file>``` fichier de sortie : CSV.  
-```mft_dump --extract-resident-streams <output_directory> -o json <input_file>``` extraira tous les flux résidents dans MFT vers des fichiers dans <output_directory>.  
+- mft_dump (https://github.com/omerbenamram/mft) `Parser le fichier $MFT`  
+fichier de sortie : JSON.
+```
+mft_dump <input_file>
+mft_dump $MFT
+```    
+fichier de sortie : CSV.  
+```
+mft_dump -o csv <input_file>
+```   
+extraira tous les flux résidents dans MFT vers des fichiers dans <output_directory>.  
+```
+mft_dump --extract-resident-streams <output_directory> -o json <input_file>
+``` 
 
 - log2timeline (plaso) `Créer une timeline semi-auto en 2 étapes : étape 1/2`
 - psort (plaso) `Créer une timeline semi-auto en 2 étapes : étape 2/2`  
