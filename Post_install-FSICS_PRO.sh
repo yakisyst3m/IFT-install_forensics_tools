@@ -643,6 +643,7 @@ convertinstall() {
     echo -e "\n${bleu}[ ---- Début d'installation de csv2xlsx.py ---- ]${neutre}\n"
     if [[ ! -f "/usr/local/bin/csv2xlsx.py" ]] ; then
         cd "$cheminInstall"
+        pip3 install openpyxl
         cp res/csv2xlsx.py /opt
         chmod +x /opt/csv2xlsx.py
         ln -s /opt/csv2xlsx.py /usr/local/bin && echo -e "${vert} [ OK ] csv2xlsx.py installé ${neutre}"
