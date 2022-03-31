@@ -23,7 +23,7 @@
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
 # VARIABLES : LES VERSIONS / CHEMINS / COULEURS
-    versionIFT="v2.1-8.3 du 28 mars 2022"
+    versionIFT="v2.1-8.3 du 31 mars 2022"
     
     utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
     VERSION_OS=$(grep -E '^ID=' /etc/os-release | cut -d "=" -f2)
