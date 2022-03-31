@@ -18,6 +18,7 @@
 # 2022 03 25    v2.1-8.1 Ajout outils log + amélioration code
 # 2022 03 26    v2.1-8.2 Ajout de mft_dump
 # 2022 03 28    v2.1-8.3 AJout csv2xlsx.py + ramParserVolatility3
+# 2022 03 31    v2.1-8.4 Multiples corrections - ramParserVolatility3 + ajout backup dconf rep 'res' + modif lancement fonctions menu
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
@@ -120,11 +121,11 @@ function mjour() {
 function installbase() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Installation des logiciels de base ---- ]${neutre}\n"
-    apt update && apt install -y vim htop glances bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip 
+    apt update && apt install -y vim htop glances bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip wireshark
     
     # Installation de Wireshark de façon non-intéractive
-    echo "wireshark-common wireshark-common/install-setuid boolean true" | debconf-set-selections
-    DEBIAN_FRONTEND=noninteractive apt-get -y install wireshark && echo -e "${vert} [ OK ] Logiciels de Bases Installés ${neutre}"
+    #echo "wireshark-common wireshark-common/install-setuid boolean true" | debconf-set-selections
+    #DEBIAN_FRONTEND=noninteractive apt-get -y install wireshark && echo -e "${vert} [ OK ] Logiciels de Bases Installés ${neutre}"
 
     decompte 2
 
@@ -263,7 +264,7 @@ function creerrepertoires() {
         mkdir -p /cases/artefacts/{win_Artefacts_01,win_Artefacts_02,win_Artefacts_03,win_Artefacts_04}/{firefoxHistory,pst/PJ_outlook,prefetch,malware,mft,dump,evtx,timeline,hivelist,network,filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil windows : /cases Configuré ${neutre}"
 
         #    Cas d'analyse linux
-        mkdir -p /cases/{linux_Artefacts_01,linux_Artefacts_02,linux_Artefacts_03,linux_Artefacts_04}/{firefoxHistory,info_OS/{release,grub},cron,history/{cmd,viminfo},mail/{PJ_mail,},malware,dump,log,timeline,login_MDP,network/{ssh,},filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil linux : /cases Configuré ${neutre}"
+        mkdir -p /cases/artefacts/{linux_Artefacts_01,linux_Artefacts_02,linux_Artefacts_03,linux_Artefacts_04}/{firefoxHistory,info_OS/{release,grub},cron,history/{cmd,viminfo},mail/{PJ_mail,},malware,dump,log,timeline,login_MDP,network/{ssh,},filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil linux : /cases Configuré ${neutre}"
 
         #    Pour accueil des montages HDD ...
         mkdir -p /cases/montages/{usb1,usb2,usb3,usb4,win1,win2,linux1,linux2,encase1-E01,encase2-E01,encase3-E01,encase4-E01,ram1,ram2,raw1,raw2,raw3,raw4} && echo -e "${vert} [ OK ] accueil windows : /mnt Configuré ${neutre}"    
@@ -354,7 +355,7 @@ function volat2() {
 function volat3() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de Volatility 3 ---- ]${neutre}\n"
-    if [[ ! -f "/usr/local/bin/vol.py" ]] || [[ ! -f "/usr/local/bin/vol3.py" ]] ; then
+    if [[ ! -f "/usr/local/bin/vol3.py" ]] ; then
     
         # Préparation avant installation
         cd /home/"$utilisateur"/
@@ -391,6 +392,25 @@ function volat3() {
         # Test
         vol3.py -h
         sleep 3
+    else
+        echo -e "${vert} [ OK ] Volatility 3 est déjà installé ${neutre}"
+    fi
+}
+
+########    OUTILS DE CONVERSIONS
+
+convertinstall() {
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de csv2xlsx.py ---- ]${neutre}\n"
+    if [[ ! -f "/usr/local/bin/csv2xlsx.py" ]] ; then
+        cd "$cheminInstall"
+        pip3 install openpyxl
+        cp res/csv2xlsx.py /opt
+        chmod +x /opt/csv2xlsx.py
+        ln -s /opt/csv2xlsx.py /usr/local/bin && echo -e "${vert} [ OK ] csv2xlsx.py installé ${neutre}"
+        sleep 3
+    else
+        echo -e "${vert} [ OK ] csv2xlsx.py est déjà installé ${neutre}"
     fi
 }
 
@@ -657,24 +677,6 @@ function vbox() {
     fi
 }
 
-########    OUTILS DE CONVERSIONS
-
-convertinstall() {
-    echo -e "\n##############################################\n"
-    echo -e "\n${bleu}[ ---- Début d'installation de csv2xlsx.py ---- ]${neutre}\n"
-    if [[ ! -f "/usr/local/bin/csv2xlsx.py" ]] ; then
-        cd "$cheminInstall"
-        pip3 install openpyxl
-        cp res/csv2xlsx.py /opt
-        chmod +x /opt/csv2xlsx.py
-        ln -s /opt/csv2xlsx.py /usr/local/bin && echo -e "${vert} [ OK ] csv2xlsx.py installé ${neutre}"
-        sleep 3
-    else
-        echo -e "${rouge} [ NOK ] csv2xlsx.py est déjà installé ${neutre}"
-    fi
-}
-
-
 ######## VALIDATION DES CHANGEMENTS ###########################################################
 
 function validChang() {
@@ -689,9 +691,6 @@ function validChang() {
         decompte 4
     fi
 }
-
-
-
 
 ######## MENU ###########################################################
 
@@ -710,7 +709,7 @@ echo " "
     #echo -e "${bleu}Faites votre choix d'installation :${neutre}"
     #echo -e "${vert}-----------------------------------${neutre}"
     echo -e "\e[3C${bleu}[ --    ${souligne}INSTALLATION DE BASE${neutrePolice}${bleu}     -- ]${neutre}"    
-    echo -e "\t[  ${vert}0${neutre} ] - Modification du fichier source.list HTTP vers HTTPS"    
+    echo -e "\t[  ${vert}0${neutre} ] - Modification du fichier source.list HTTP vers HTTPS + Mise à jour des paquets"    
     echo -e "\t[  ${vert}1${neutre} ] - Mise à jour des paquets"
     echo -e "\t[  ${vert}2${neutre} ] - Installation des logiciels de base + configuration des applications : Wireshark / déscativation IPv6 / Activation du pavé numérique / Tmux / Vim / Date-Heure bash_history"
     echo -e "\t[  ${vert}3${neutre} ] - Création de l'architecture des dossiers : pour montage des disques windows et linux à analyser"
@@ -724,7 +723,7 @@ echo " "
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE RAM${neutrePolice}${bleu}     -- ]${neutre}"    
     echo -e "\t[ ${vert}30${neutre} ] - Installation de volatility 2.6"
     echo -e "\t[ ${vert}31${neutre} ] - Installation de volatility 3"
-    echo -e "\t[ ${vert}32${neutre} ] - Installation de ramParserVolatility3 : export CSV + XLSX du parsing da la RAM.raw (Installer avant : volatility 3 N°31 + \"csv2xlsx.py\" N°100)"
+    echo -e "\t[ ${vert}32${neutre} ] - Installation de ramParserVolatility3 : parsing .raw avec Vol3.py + export CSV / XLSX "
     
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE REGISTRE${neutrePolice}${bleu}     -- ]${neutre}"
     echo -e "\t[ ${vert}40${neutre} ] - Installation de Regripper : analyse registre Windows"
@@ -778,7 +777,7 @@ echo " "
     "31")
         volat3 ; validChang ;;
     "32")
-        ramParserinstall ;;
+        volat3 ; convertinstall ; ramParserinstall ;;
     "40")
         reginst ;;
     "50")
@@ -806,9 +805,9 @@ echo " "
    "100")
         convertinstall ;;    
    "200")
-        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; ramParserinstall ;\
+        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; convertinstall ; ramParserinstall ;\
         reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; mftdumpinst ;\
-        loginstall ; forall ; forextra ; forextragui ; vbox ; convertinstall ;;
+        loginstall ; forall ; forextra ; forextragui ; vbox ;;
     f|F) break ;;
     q|Q) exit ;;
     *) continue ;;
