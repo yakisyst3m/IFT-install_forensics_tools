@@ -3,64 +3,80 @@
 # Installer  openpyxl : pip3 install openpyxl   /   présent dans github     https://github.com/yakisyst3m/IFT-install_forensics_tools.git
 # Avoir l'application csv2xlsx.py :         https://github.com/yakisyst3m/IFT-install_forensics_tools.git
 
+# Le script utilise volatility3 pour une liste d'images dans un même dossier.
+# Il fait des exports en csv et xlsx de chaque commande volatility
+# Se placer dans le dossier contenant l'image.raw + lancer le script
+
+#2022 03 31     v1.0-beta   
+
 utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
 rouge='\e[1;31m'
 vert='\e[1;32m'
-#jaune='\e[1;33m'
 bleu='\e[1;34m' 
-#violet='\e[1;35m'
 neutre='\e[0;m'
-#bleufondjaune='\e[7;44m\e[1;33m'
-#souligne="\e[4m"
+
+if [[ "$1" == '--help' ]] || [[ "$1" == "-h"  ]] || [[ "$#" != "0" ]] ; then
+	echo -e "\n${souligne}Aide pour utiliser la commande :${neutre}"
+	echo -e "** Lancer la commande de cette façon :\n"
+    echo -e	"\tcd dossier_contenant_images.raw"
+    echo -e	"\t./ramParserVolatility3\n"
+fi
 
 cpt=1
-
+imagesRaw=$(find ./ -maxdepth 1 -type f -regextype posix-egrep -regex '.*\.(dd|raw|mem|dmp)$')
 versionPython=$(dpkg -l | grep -E "python3\.[0-9]" | awk -F " " '{print $3}' | uniq | grep -oE "3\.[0-9]")
 
-for raw in $(ls *.raw) ; do
-    cpt="$cpt"
-    echo -e "\n${vert}=============================================     MACHINE EN COURS DE PARSING : $cpt        ===============================================${neutre}"
-    echo -e "\n\t${vert}[ -- Voici l'image trouvée -- ]${neutre}\n"
-    ls $raw
-    echo -e "\n\t${rouge}Entrer le nom de machine pour créer le dossier d'export : ${neutre}\n"
-    read UCNAME
-    mkdir -p "$UCNAME"/{CSV,XLSX}
+if [ ! -z "$imagesRaw" ] ; then
 
-    # Extraire les info grâce à Volatility 3
-    echo -e "${bleu}\n\t[ --    Volatility 3 :  Info MAchine    -- ]${neutre}"
-        vol3.py -f $raw windows.info.Info |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_Info.csv
+    # Se placer dans le dossier contenant l'image.raw + lancer le script
+    for raw in $(ls *.raw) ; do
+        cpt="$cpt"
+        echo -e "\n${vert}=============================================     MACHINE EN COURS DE PARSING : $cpt        ===============================================${neutre}"
+        echo -e "\n\t${vert}[ -- Voici l'image trouvée -- ]${neutre}\n"
+        ls $raw
+        echo -e "\n\t${rouge}Entrer le nom de machine pour créer le dossier d'export : ${neutre}\n"
+        read UCNAME
+        mkdir -p "$UCNAME"/{CSV,XLSX}
 
-    echo -e "${bleu}\n\t[ --    Volatility 3 :  Processus    -- ]${neutre}"
-        vol3.py -f $raw windows.pslist.PsList |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_PsList.csv
-        echo -e "\n"
-        vol3.py -f $raw windows.pstree.PsTree |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_PsTree.csv
+        # Extraire les info grâce à Volatility 3
+        echo -e "${bleu}\n\t[ --    Volatility 3 :  Info MAchine    -- ]${neutre}"
+            vol3.py -f $raw windows.info.Info |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_Info.csv
 
-    echo -e "${bleu}\n\t[ --    Volatility 3 :  Ruches    -- ]${neutre}"
-        vol3.py -f $raw windows.registry.hivelist.HiveList |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_HiveList.csv
-        echo -e "\n"
-        vol3.py -f $raw windows.registry.printkey --key "Software\Microsoft\Windows\CurrentVersion\Run" |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_HiveList_Key_Run.csv
-        echo -e "\n"
-        vol3.py -f $raw windows.registry.printkey --key "Software\Microsoft\Windows\CurrentVersion\RunOnce" |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_HiveList_Key_RunOnce.csv
+        echo -e "${bleu}\n\t[ --    Volatility 3 :  Processus    -- ]${neutre}"
+            vol3.py -f $raw windows.pslist.PsList |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_PsList.csv
+            echo -e "\n"
+            vol3.py -f $raw windows.pstree.PsTree |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_PsTree.csv
 
-    echo -e "${bleu}\n\t[ --    Volatility 3 :  Réseau    -- ]${neutre}"
-        vol3.py -f $raw windows.netscan.NetScan |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_NetScan.csv
-        echo -e "\n"
-        vol3.py -f $raw windows.netstat.NetStat |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_NetStat.csv
-        echo -e "\n"
-        vol3.py -f $raw windows.svcscan.SvcScan |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_SvcScan.csv
+        echo -e "${bleu}\n\t[ --    Volatility 3 :  Ruches    -- ]${neutre}"
+            vol3.py -f $raw windows.registry.hivelist.HiveList |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_HiveList.csv
+            echo -e "\n"
+            vol3.py -f $raw windows.registry.printkey --key "Software\Microsoft\Windows\CurrentVersion\Run" |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_HiveList_Key_Run.csv
+            echo -e "\n"
+            vol3.py -f $raw windows.registry.printkey --key "Software\Microsoft\Windows\CurrentVersion\RunOnce" |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_HiveList_Key_RunOnce.csv
 
-    echo -e "${bleu}\n\t[ --    Volatility 3 :  Lignes de commandes    -- ]${neutre}"
-        vol3.py -f $raw windows.cmdline.CmdLine |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_CmdLine.csv
+        echo -e "${bleu}\n\t[ --    Volatility 3 :  Réseau    -- ]${neutre}"
+            vol3.py -f $raw windows.netscan.NetScan |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_NetScan.csv
+            echo -e "\n"
+            vol3.py -f $raw windows.netstat.NetStat |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_NetStat.csv
+            echo -e "\n"
+            vol3.py -f $raw windows.svcscan.SvcScan |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_SvcScan.csv
 
-    # Convertir les CSV en XLSX avec comme délimiteur "tab"
-    for i in $(ls "$UCNAME"/CSV/*.csv) ; do
-        python"$versionPython" /opt/csv2xlsx.py "$i"
-        mv "$UCNAME"/CSV/*.xlsx "$UCNAME"/XLSX/
+        echo -e "${bleu}\n\t[ --    Volatility 3 :  Lignes de commandes    -- ]${neutre}"
+            vol3.py -f $raw windows.cmdline.CmdLine |  tee -a "$UCNAME"/CSV/RAM_"$UCNAME"_CmdLine.csv
+
+        # Convertir les CSV en XLSX avec comme délimiteur "tab"
+        for i in $(ls "$UCNAME"/CSV/*.csv) ; do
+            python"$versionPython" /opt/csv2xlsx.py "$i"
+            mv "$UCNAME"/CSV/*.xlsx "$UCNAME"/XLSX/
+        done
+
+        echo -e "\n${vert}=============================================     MACHINE $cpt TERMINÉE        ===============================================${neutre}"
+        cpt=$(("$cp"+1))
     done
 
-    echo -e "\n${vert}=============================================     MACHINE $cpt TERMINÉE        ===============================================${neutre}"
-    cpt=$(("$cp"+1))
-done
+else
+    echo -e "\n\t${rouge}-- Il n'y a aucune image .raw .dd .mem .dmp dans ce dossier   --${neutre}\n"
+fi
 
 chmod -R 750 "$UCNAME"/
 chown "$utilisateur": "$UCNAME"/
