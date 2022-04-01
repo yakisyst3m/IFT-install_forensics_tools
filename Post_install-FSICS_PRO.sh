@@ -723,7 +723,7 @@ echo " "
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE RAM${neutrePolice}${bleu}     -- ]${neutre}"    
     echo -e "\t[ ${vert}30${neutre} ] - Installation de volatility 2.6"
     echo -e "\t[ ${vert}31${neutre} ] - Installation de volatility 3"
-    echo -e "\t[ ${vert}32${neutre} ] - Installation de ramParserVolatility3 : parsing .raw avec Vol3.py + export CSV / XLSX "
+    #echo -e "\t[ ${vert}32${neutre} ] - Installation de ramParserVolatility3 : parsing .raw avec Vol3.py + export CSV / XLSX "
     
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE REGISTRE${neutrePolice}${bleu}     -- ]${neutre}"
     echo -e "\t[ ${vert}40${neutre} ] - Installation de Regripper : analyse registre Windows"
@@ -776,8 +776,8 @@ echo " "
         volat2 ; validChang ;;
     "31")
         volat3 ; validChang ;;
-    "32")
-        volat3 ; convertinstall ; ramParserinstall ;;
+    #"32")
+        #volat3 ; convertinstall ; ramParserinstall ;;
     "40")
         reginst ;;
     "50")
