@@ -121,7 +121,7 @@ function mjour() {
 function installbase() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Installation des logiciels de base ---- ]${neutre}\n"
-    apt update && apt install -y vim htop glances bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip wireshark
+    apt update && apt install -y vim htop bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip wireshark
     
     # Installation de Wireshark de façon non-intéractive
     #echo "wireshark-common wireshark-common/install-setuid boolean true" | debconf-set-selections
