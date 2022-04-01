@@ -20,6 +20,7 @@ if [[ "$1" == '--help' ]] || [[ "$1" == "-h"  ]] || [[ "$#" != "0" ]] ; then
 	echo -e "** Lancer la commande de cette façon :\n"
     echo -e	"\tcd dossier_contenant_images.raw"
     echo -e	"\t./ramParserVolatility3\n"
+    exit
 fi
 
 cpt=1
