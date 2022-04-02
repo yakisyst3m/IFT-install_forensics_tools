@@ -2,5 +2,5 @@
 
 # Import Back environnement mate perso - à charger en utilisateur
 
-dconf load / < ./res/dconf-full-backup
+dconf load / < dconf-full-backup
 

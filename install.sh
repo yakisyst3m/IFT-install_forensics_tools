@@ -7,7 +7,7 @@ neutre='\e[0;m'
 
 utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
 uidutilisateur=$(echo $UID)
-cheminInstall="/home/$utilisateur/Documents/Linux-Post_Install/"
+cheminInstall="/home/$utilisateur/Documents/IFT-install_forensics_tools/"
 
 if [ "$uidutilisateur" = "0" ] ; then
     if [ ! -d "$cheminInstall" ] ; then

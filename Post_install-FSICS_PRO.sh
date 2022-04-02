@@ -6,33 +6,37 @@
 # 2022 02 03    v1.1
 # 2022 02 17    v1.2
 # 2022 03 06    v2.0 
-# 2022 03 06    v2.1 mise en place du menu + fonctions
-# 2022 03 07    v2.1-1 Modif ShimCacheParser.py
-# 2022 03 07    v2.1-2 Modif nommage volatility : vol2.py pour volatility 2.6 / vol3.py pour volatility 3
-# 2022 03 09    v2.1-3 Correctif chemins + python3 + fcontion validchg
-# 2022 03 10    v2.1-4 Modif install wireshark + extpackVbox + formatage du mode verbeux
-# 2022 03 16    v2.1-5 Correction volatility 3 table des symbols windows + fonction décompte + modif fct IPv6
-# 2022 03 18    v2.1-6 suite sleuthkit
-# 2022 03 18    v2.1-7 Python ImageMounter
-# 2022 03 22    v2.1-8 Correction vol2.py + vol3.py + ShimCacheParser.py
-# 2022 03 25    v2.1-8.1 Ajout outils log + amélioration code
-# 2022 03 26    v2.1-8.2 Ajout de mft_dump
-# 2022 03 28    v2.1-8.3 AJout csv2xlsx.py + ramParserVolatility3
-# 2022 03 31    v2.1-8.4 Multiples corrections - ramParserVolatility3 + ajout backup dconf rep 'res' + modif lancement fonctions menu
+# 2022 03 06    v2.1         Mise en place du menu + fonctions
+# 2022 03 07    v2.1-1       Modif ShimCacheParser.py
+# 2022 03 07    v2.1-2       Modif nommage volatility : vol2.py pour volatility 2.6 / vol3.py pour volatility 3
+# 2022 03 09    v2.1-3       Correctif chemins + python3 + fcontion validchg
+# 2022 03 10    v2.1-4       Modif install wireshark + extpackVbox + formatage du mode verbeux
+# 2022 03 16    v2.1-5       Correction volatility 3 table des symbols windows + fonction décompte + modif fct IPv6
+# 2022 03 18    v2.1-6       Suite sleuthkit
+# 2022 03 18    v2.1-7       Python ImageMounter
+# 2022 03 22    v2.1-8       Correction vol2.py + vol3.py + ShimCacheParser.py
+# 2022 03 25    v2.1-8.1     Ajout outils log + amélioration code
+# 2022 03 26    v2.1-8.2     Ajout de mft_dump
+# 2022 03 28    v2.1-8.3     AJout csv2xlsx.py + ramParserVolatility3
+# 2022 03 31    v2.1-8.4     Multiples corrections - ramParserVolatility3 + ajout backup dconf rep 'res' + modif lancement fonctions menu
+# 2022 04 01    v2.1-8.5     Yara + Multiples corrections - ramParserVolatility3 de la version beta
+# 2022 04 02    v2.2         Multiples corrections - ramParserVolatility3 v1.0 + modification de csv2xlsx
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
 # VARIABLES : LES VERSIONS / CHEMINS / COULEURS
-    versionIFT="v2.1-8.3 du 31 mars 2022"
+    versionIFT="v2.2 du 2 avril 2022"
     
     utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
     VERSION_OS=$(grep -E '^ID=' /etc/os-release | cut -d "=" -f2)
+    VERSION_KERNEL=$(uname -r)
+    VERSION_INITRD=$(basename /boot/initrd.img-$(uname -r) | cut -d "-" -f2-4)
     ENVBUREAU="/etc/mate/"
     GESTCONNECTION="/etc/lightdm/"
     cheminInstall="/home/$utilisateur/Documents/Linux-Post_Install/"
 
     ETHNAME=$(ip a | grep "2: en" | tr " " ":" | awk -F ":" '{print $3}')
-    ETHCHEMIN="/etc/sysconfig/network-scripts/ifcfg-$ETHNAME"
+    ETHCHEMIN="/etc/sysconfig/network-scripts/ifcfg-$ETHNAME" # pour le futur : RedHat
     ETHUUID=$(nmcli con show | grep eth | awk -F " " '{print $2}')
     
     SYSCTL="/etc/sysctl.conf"
@@ -63,8 +67,8 @@ decompte() {
 
 ######## MODIFICATION DES SOURCE.LIST 
 
-    # DEBIAN 
 function sourcelist() {
+    # DEBIAN
     if [ "$VERSION_OS" = 'debian' ] ; then
         echo -e "\n${bleu}[ ---- Mise à jour de source.list de Debian ---- ]${neutre}\n"
         echo "deb http://deb.debian.org/debian/ bullseye main non-free contrib" > /etc/apt/sources.list
@@ -74,20 +78,12 @@ function sourcelist() {
         echo "deb http://deb.debian.org/debian/ bullseye-updates main contrib non-free" >> /etc/apt/sources.list
         echo "deb-src http://deb.debian.org/debian/ bullseye-updates main contrib non-free" >> /etc/apt/sources.list
         echo "deb http://deb.debian.org/debian bullseye-backports main contrib non-free" >> /etc/apt/sources.list
-
+        echo -e "${vert} [ OK ] Sources.list $VERSION_OS à jour ${neutre}"
         apt update && apt install -y apt-transport-https
         sed -i 's/http/https/g' /etc/apt/sources.list
-        apt update && apt upgrade -y && echo -e "${vert} [ OK ] Système à jour ${neutre}"
+        apt update && apt upgrade -y && echo -e "${vert} [ OK ] Système $VERSION_OS à jour ${neutre}"
         sleep 2
-        
-        # Correction "A job is runnin UID 1000 (34s / 2mi 3s)"
-        if [ "grep -q 'DefaultTimeoutStartSec=20s' /etc/systemd/system.conf" ] ; then
-            echo -e "${vert} [ OK ] Correction des erreurs déjà effectué ${neutre}"
-        else
-            sed -i '/\[Manager]/a DefaultTimeoutStartSec=20s' /etc/systemd/system.conf 
-            sed -i '/\[Manager]/a DefaultTimeoutStopSec=20s' /etc/systemd/system.conf && echo -e "${vert} [ OK ] Correction des erreurs au boot et à l'arrêt effectué ${neutre}"
-        fi
-        decompte 2
+        decompte 3
                       
     # UBUNTU 
     elif [ "$VERSION_OS" = 'ubuntu' ] ; then
@@ -99,9 +95,9 @@ function sourcelist() {
         echo "deb-src http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse"  >> /etc/apt/soyakisyst3m/post_install_linux_install_forensics_toolsurces.list
         echo "deb-src http://fr.archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse"  >> /etc/apt/sources.list
         echo "deb http://fr.archive.ubuntu.com/ubuntu/ focal-backports main restricted universe multiverse"  >> /etc/apt/sources.list
-
-        apt update && apt upgrade -y && echo -e "${vert} [ OK ] Système à jour ${neutre}"
-        decompte 2
+        echo -e "${vert} [ OK ] Sources.list $VERSION_OS à jour ${neutre}"
+        apt update && apt upgrade -y && echo -e "${vert} [ OK ] Système $VERSION_OS à jour ${neutre}"
+        decompte 3
     else
         echo -e "${rouge}Le système d'exploitation n'est ni une distribution Debian, ni une distribution unbuntu : [ Fin de l'installation ]${neutre}"
         exit
@@ -112,8 +108,8 @@ function sourcelist() {
 
 function mjour() {
     echo -e "\n${bleu}[ ---- Mise à jour du système d'exploitation---- ]${neutre}\n"
-    apt update && apt upgrade -y && echo -e "${vert} [ OK ] Système à jour ${neutre}"
-    sleep 3
+    apt update && apt upgrade -y && echo -e "${vert} [ OK ] Système $VERSION_OS à jour ${neutre}"
+    decompte 3
 }
 
 ######## INSTALL DES LOGICIELS DE BASE 
@@ -121,30 +117,40 @@ function mjour() {
 function installbase() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Installation des logiciels de base ---- ]${neutre}\n"
-    apt update && apt install -y vim htop bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip wireshark
-    
-    # Installation de Wireshark de façon non-intéractive
-    #echo "wireshark-common wireshark-common/install-setuid boolean true" | debconf-set-selections
-    #DEBIAN_FRONTEND=noninteractive apt-get -y install wireshark && echo -e "${vert} [ OK ] Logiciels de Bases Installés ${neutre}"
-
-    decompte 2
+    logicielsDeBase="vim htop bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip wireshark"
+    echo -e "${vert}$logicielsDeBase${neutre}\n"
+    decompte 4
+    apt update && apt install -y $logicielsDeBase && echo -e "${vert} [ OK ] Logiciels de Base installés ${neutre}"
 
     if [ "$VERSION_OS" = 'debian' ] ; then
         ## Corrections kernel Debian 11
         echo -e "\n##############################################\n"
         echo -e "${bleu}[ Correction des erreurs au boot et à l'arrêt ]${neutre}"
+        
+        # Correction "A job is runnin UID 1000 (34s / 2mi 3s)"
+        if [ "grep -q 'DefaultTimeoutStartSec=20s' /etc/systemd/system.conf" ] ; then
+            echo -e "${vert} [ OK ] Correction des erreurs déjà effectué ${neutre}"
+        else
+            sed -i '/\[Manager]/a DefaultTimeoutStartSec=20s' /etc/systemd/system.conf 
+            sed -i '/\[Manager]/a DefaultTimeoutStopSec=20s' /etc/systemd/system.conf && echo -e "${vert} [ OK ] Correction des erreurs au boot et à l'arrêt effectué ${neutre}"
+        fi
+        
         apt install -y libblockdev-mdraid2 libblockdev* apt-file 
-        apt install -y firmware-linux firmware-linux-free firmware-linux-nonfree && echo -e "${vert} [ OK ] Le firmware-linux pour Debian Installé ${neutre}"
-        update-initramfs -u -k all && echo -e "${vert} [ OK ] Correction des erreurs au boot et à l'arrêt effectué ${neutre}"
-        decompte 2
+        apt install -y firmware-linux firmware-linux-free firmware-linux-nonfree && echo -e "${vert} [ OK ] Le firmware-linux pour Debian est Installé ${neutre}"
+        if [ "$VERSION_KERNEL" != "$VERSION_INITRD" ] ; then
+            update-initramfs -u -k all && echo -e "${vert} [ OK ] Mise à jour de l'initrd effectué ${neutre}"
+        else
+            echo -e "${vert} [ OK ] Pas de mise à jour car --> L'initrd version : $VERSION_INITRD = kernel version : $VERSION_KERNEL ${neutre}"
+        fi
+        decompte 3
     fi
 
     cp res/gufw.service /etc/systemd/system/ && echo -e "${vert} [ OK ] Firewall Gufw service en place à l'emplacement : /etc/systemd/system/${neutre}"
-    decompte 2
+    decompte 3
 
     if [ -d "$ENVBUREAU" ] ; then
-        apt install -y caja-open-terminal mate-desktop-environment-extras  && echo -e "${vert} [ OK ] Outils d'environnement de Bureau Mate installés${neutre}"
-        decompte 2
+        apt install -y caja-open-terminal mate-desktop-environment-extras && echo -e "${vert} [ OK ] Outils d'environnement de Bureau Mate installés${neutre}"
+        decompte 3
     fi
 }
 
@@ -160,14 +166,14 @@ function config() {
         chgrp wireshark /usr/bin/dumpcap
         chmod 750 /usr/bin/dumpcap
         setcap cap_net_raw,cap_net_admin=eip /usr/bin/dumpcap && echo -e "${vert} [ OK ] Wireshark configuré ${neutre}" || echo -e "${rouge} [ NOK ] Résoudre le problème ${neutre}"
-        sleep 2
+        decompte 3
     fi
 
     # Désactivation IPv6
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Désactivation de l'IPv6 ---- ]${neutre}\n"
 
-    sed -ri  "s/^IPV6/#IPV6/g" "$ETHCHEMIN" && echo -e "${vert} [ OK ] Ligne IPV6 désactivées dans le fichier $ETHCHEMIN ${neutre}"
+    #sed -ri  "s/^IPV6/#IPV6/g" "$ETHCHEMIN" && echo -e "${vert} [ OK ] Ligne IPV6 désactivées dans le fichier $ETHCHEMIN ${neutre}"
 
     grep -q 'net.ipv6.conf.all.disable_ipv6' "$SYSCTL"
     if [ "$?" = "0" ] ; then # si la ligne existe / -q pour mode silencieux, ne note rien à l'écran
@@ -196,10 +202,9 @@ function config() {
     else
         echo "net.ipv6.conf.default.autoconf=0" >> "$SYSCTL"  && echo -e "${vert} [ OK ] net.ipv6.conf.default.autoconf=0 : paramétré ${neutre}"
     fi
-    echo -e "\n${bleufondjaune}Validation de la configuration${neutre}\n"
 
-    sysctl -p
-    sleep 2
+    sysctl -p && echo -e "\n${bleufondjaune}IPv6 a été désactivé dans le fichier $SYSCTL ${neutre}\n"
+    decompte 3
 
     # Pavé numérique
     if [ -d $GESTCONNECTION ] ; then # Debian Mate avec lightdm
@@ -207,15 +212,15 @@ function config() {
         echo -e "\n${bleu}[ ---- Configuration du pavé numérique ---- ]${neutre}\n"
         sed -i '/\[Seat:\*\]/a greeter-setup-script=/usr/bin/numlockx on' /etc/lightdm/lightdm.conf
         echo "NUMLOCK=on" > /etc/default/numlockx
-        grep -q "NUMLOCK=on" /etc/default/numlockx && echo -e "${vert} [ OK ] installé et paramétré pour lightdm ${neutre}"
-        sleep 2
+        grep -q "NUMLOCK=on" /etc/default/numlockx && echo -e "${vert} [ OK ] - Le pavé numérique a été activé en auto pour lightdm ${neutre}"
+        decompte 3
     fi
 
     if [ "$VERSION_OS" = 'ubuntu' ] ; then # Ubuntu avec GDM3
         echo -e "\n##############################################\n"
         echo -e "\n${bleu}[ ---- Configuration du pavé numérique ---- ]${neutre}\n"
-        sed -i '/exit 0/i \if [ -x /usr/bin/numlockx ]; then\nexec /usr/bin/numlockx on\nfi' /etc/gdm3/Init/Default && echo -e "${vert} [ OK ] installé et paramétré pour gdm3 Ubuntu ${neutre}"
-        sleep 2
+        sed -i '/exit 0/i \if [ -x /usr/bin/numlockx ]; then\nexec /usr/bin/numlockx on\nfi' /etc/gdm3/Init/Default && echo -e "${vert} [ OK ] - Le pavé numérique a été activé en auto pour gdm3 Ubuntu ${neutre}"
+        decompte 3
     fi
 
     # Modif des droits TMUX
@@ -224,8 +229,8 @@ function config() {
     if [[ -f "/home/$utilisateur/.tmux.conf" ]] && [[ -f "/root/.tmux.conf" ]] ; then
         cp ./res/tmux.conf /home/"$utilisateur"/.tmux.conf
         cp ./res/tmux.conf /root/.tmux.conf
-        chown "$utilisateur": /home/"$utilisateur"/.tmux.conf && echo -e "${vert} [ OK ] TMUX Configuré ${neutre}"
-        sleep 2
+        chown "$utilisateur": /home/"$utilisateur"/.tmux.conf && echo -e "${vert} [ OK ] TMUX a été Configuré ${neutre}"
+        decompte 3
     fi
 
     # Conf vim
@@ -233,8 +238,8 @@ function config() {
     echo -e "\n${bleu}[ ---- Configuration de VIM ---- ]${neutre}\n"
     grep -qi "syntax on" /etc/vim/vimrc
     if [ "$?" != "0" ] ; then
-        echo -e "syntax on\nset number\nset autoindent\nset tabstop=6\nset showmode\nset mouse=a" >> /etc/vim/vimrc && echo -e "${vert} [ OK ] VIM Configuré ${neutre}"
-        decompte 2
+        echo -e "syntax on\nset number\nset autoindent\nset tabstop=6\nset showmode\nset mouse=a" >> /etc/vim/vimrc && echo -e "${vert} [ OK ] VIM a été Configuré ${neutre}"
+        decompte 3
     fi
 
     # Ajout Date + heure bash_history
@@ -243,13 +248,13 @@ function config() {
     
     grep -q 'HISTTIMEFORMAT' ~/.bashrc
     if [ "$?" != "0" ] ; then 
-        echo 'export HISTTIMEFORMAT="[ %d/%m/%y-%T ] - "' >> ~/.bashrc
+        echo 'export HISTTIMEFORMAT="[ %d/%m/%y-%T ] - "' >> ~/.bashrc && echo -e "${vert} [ OK ] Ajout de l'horodatage dans l'historique de commande de root ${neutre}"
         source ~/.bashrc    
     fi
     
     grep -q 'HISTTIMEFORMAT' /home/"$utilisateur"/.bashrc
     if [ "$?" != "0" ] ; then
-        echo 'export HISTTIMEFORMAT="[ %d/%m/%y-%T ] - "' >> /home/"$utilisateur"/.bashrc
+        echo 'export HISTTIMEFORMAT="[ %d/%m/%y-%T ] - "' >> /home/"$utilisateur"/.bashrc && echo -e "${vert} [ OK ] Ajout de l'horodatage dans l'historique de commande de $utilisateur ${neutre}"
         source /home/"$utilisateur"/.bashrc
     fi
 }
@@ -261,14 +266,14 @@ function creerrepertoires() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Création des dossiers qui contiendront les points de montages des disques, RAM, Artefacts Windows et Linux ---- ]${neutre}\n"
     if [[ ! -d "/cases" ]] ; then
-        mkdir -p /cases/artefacts/{win_Artefacts_01,win_Artefacts_02,win_Artefacts_03,win_Artefacts_04}/{firefoxHistory,pst/PJ_outlook,prefetch,malware,mft,dump,evtx,timeline,hivelist,network,filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil windows : /cases Configuré ${neutre}"
+        mkdir -p /cases/artefacts/{win_Artefacts_01,win_Artefacts_02,win_Artefacts_03,win_Artefacts_04}/{firefoxHistory,pst/PJ_outlook,prefetch,malware,mft,dump,evtx,timeline,hivelist,network,filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil windows : /casesartefacts/win_XXX Configuré ${neutre}"
 
         #    Cas d'analyse linux
-        mkdir -p /cases/artefacts/{linux_Artefacts_01,linux_Artefacts_02,linux_Artefacts_03,linux_Artefacts_04}/{firefoxHistory,info_OS/{release,grub},cron,history/{cmd,viminfo},mail/{PJ_mail,},malware,dump,log,timeline,login_MDP,network/{ssh,},filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil linux : /cases Configuré ${neutre}"
+        mkdir -p /cases/artefacts/{linux_Artefacts_01,linux_Artefacts_02,linux_Artefacts_03,linux_Artefacts_04}/{firefoxHistory,info_OS/{release,grub},cron,history/{cmd,viminfo},mail/{PJ_mail,},malware,dump,log,timeline,login_MDP,network/{ssh,},filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil linux : /cases/artefacts/linux_XXX Configuré ${neutre}"
 
         #    Pour accueil des montages HDD ...
-        mkdir -p /cases/montages/{usb1,usb2,usb3,usb4,win1,win2,linux1,linux2,encase1-E01,encase2-E01,encase3-E01,encase4-E01,ram1,ram2,raw1,raw2,raw3,raw4} && echo -e "${vert} [ OK ] accueil windows : /mnt Configuré ${neutre}"    
-        sleep 3
+        mkdir -p /cases/montages/{usb1,usb2,usb3,usb4,win1,win2,linux1,linux2,encase1-E01,encase2-E01,encase3-E01,encase4-E01,ram1,ram2,raw1,raw2,raw3,raw4} && echo -e "${vert} [ OK ] accueil des point de montage des images : /cases/montages Configuré ${neutre}"    
+        decompte 3
     fi
 }
 
@@ -305,7 +310,7 @@ function gdbinst() {
     # Pour root
     cp -r /home/"$utilisateur"/peda /root/peda
     echo "source /root/peda/peda.py" >> /root/.gdbinit  && echo -e "${vert} [ OK ] gdp-peda paramétré pour root ${neutre}"
-    sleep 3
+    decompte 3
 }
 
 ######################## INSTALLATION DE VOLATILITY 2.6 OU 3 #####################################"
@@ -320,7 +325,7 @@ function volat2() {
         cd /home/"$utilisateur"/Documents/
         echo "Début de l'installation et des mises à jour de Volatility 2.6 :"
         echo "Installation des librairies"
-        apt update && apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Modules afférent à Volatility 2.6 installés ${neutre}"
+        apt update && apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Installation des librairies pour Volatility 2.6 installés ${neutre}"
         decompte 1
         
         # Installation de python 2
@@ -328,17 +333,17 @@ function volat2() {
         apt install -y python2 python2.7-dev libpython2-dev
         curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
         python2 get-pip.py
-        python2 -m pip install -U setuptools wheel  && echo -e "${vert} [ OK ] Outils python pour Volatility 2.6 installés ${neutre}"
+        python2 -m pip install -U setuptools wheel  && echo -e "${vert} [ OK ] Outils python2.7 pour Volatility 2.6 installés ${neutre}"
         decompte 1
         
         # Installation des modules volatility
-        echo "Install des dépendences"
+        echo "Installation des dépendences"
         python2 -m pip install -U distorm3 yara pycrypto pillow openpyxl ujson pytz ipython capstone
-        ln -s /usr/local/lib/python2.7/dist-packages/usr/lib/libyara.so /usr/lib/libyara.so  && echo -e "${vert} [ OK ] Dépendences de Volatility 2.6 installés ${neutre}"
+        ln -s /usr/local/lib/python2.7/dist-packages/usr/lib/libyara.so /usr/lib/libyara.so  && echo -e "${vert} [ OK ] Modules de Volatility 2.6 installés ${neutre}"
         decompte 1
         
         # Téléchargement et Installation de volatility 2.6
-        python2 -m pip install -U git+https://github.com/volatilityfoundation/volatility.git  && echo -e "${vert} [ OK ] Volatility 2.6 installé ${neutre}"
+        python2 -m pip install -U git+https://github.com/volatilityfoundation/volatility.git  && echo -e "${vert} [ OK ] Téléchargement et Installation Volatility 2.6 effectué ${neutre}"
         decompte 1
         
         # Renommage de fichier
@@ -346,7 +351,7 @@ function volat2() {
         
         # Test
         vol2.py -h
-        sleep 3
+        decompte 3
     fi
 }
         
@@ -387,30 +392,31 @@ function volat3() {
         pip3 install -r requirements.txt
         
         # Lien pour lancer l'application
-        ln -s /home/"$utilisateur"/.volatility3/vol3.py /usr/local/bin/vol3.py && echo -e "${vert} [ OK ] Volatility 3 téléchargé ${neutre}"
+        ln -s /home/"$utilisateur"/.volatility3/vol3.py /usr/local/bin/vol3.py && echo -e "${vert} [ OK ] Volatility 3 a été installé ${neutre}"
         
         # Test
         vol3.py -h
-        sleep 3
+        decompte 3
     else
         echo -e "${vert} [ OK ] Volatility 3 est déjà installé ${neutre}"
     fi
 }
 
-########    OUTILS DE CONVERSIONS
+########    OUTILS DE CONVERSIONS       https://gitlab.com/DerLinkshaender/csv2xlsx
 
 convertinstall() {
     echo -e "\n##############################################\n"
-    echo -e "\n${bleu}[ ---- Début d'installation de csv2xlsx.py ---- ]${neutre}\n"
-    if [[ ! -f "/usr/local/bin/csv2xlsx.py" ]] ; then
+    echo -e "\n${bleu}[ ---- Début d'installation de csv2xlsx ---- ]${neutre}\n"
+    if [[ ! -f "/usr/local/bin/csv2xlsx" ]] ; then
         cd "$cheminInstall"
-        pip3 install openpyxl
-        cp res/csv2xlsx.py /opt
-        chmod +x /opt/csv2xlsx.py
-        ln -s /opt/csv2xlsx.py /usr/local/bin && echo -e "${vert} [ OK ] csv2xlsx.py installé ${neutre}"
-        sleep 3
+        cp res/csv2xlsx_linux_amd64 /opt/csv2xlsx
+        chmod +x /opt/csv2xlsx
+        chown $utilisateur: /opt/csv2xlsx
+        ln -s /opt/csv2xlsx /usr/local/bin && echo -e "${vert} [ OK ] csv2xlsx a été installé ${neutre}"
+        csv2xlsx --help
+        decompte 3
     else
-        echo -e "${vert} [ OK ] csv2xlsx.py est déjà installé ${neutre}"
+        echo -e "${vert} [ OK ] csv2xlsx est déjà installé ${neutre}"
     fi
 }
 
@@ -419,20 +425,21 @@ convertinstall() {
 ramParserinstall() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de ramParser ---- ]${neutre}\n"
-    if [[ -f "/usr/local/bin/vol3.py " ]] || [[ -f "/usr/local/bin/csv2xlsx.py" ]] ; then
+    if [[ -f "/usr/local/bin/vol3.py" ]] && [[ -f "/usr/local/bin/csv2xlsx" ]] ; then
         if [[ ! -f "/usr/local/bin/ramParserVolatility3" ]] ; then
             cd "$cheminInstall"
             cp res/ramParserVolatility3.sh /opt
             chmod +x /opt/ramParserVolatility3.sh
-            ln -s /opt/ramParserVolatility3.sh /usr/local/bin/ramParserVolatility3 && echo -e "${vert} [ OK ] ramParserVolatility3 installé ${neutre}"
-            sleep 3
+            chown $utilisateur: /opt/ramParserVolatility3.sh
+            ln -s /opt/ramParserVolatility3.sh /usr/local/bin/ramParserVolatility3 && echo -e "${vert} [ OK ] ramParserVolatility3 s'est correctement installé ${neutre}"
+            decompte 3
         else 
             echo -e "${vert} [ OK ] ramParserVolatility3 est déjà installé ${neutre}"
-            sleep 3
+            decompte 3
         fi
     else
-        echo -e "${rouge} [ NOK ] Volatility3 ou csv2xlsx.py : au moins une des 2 applications n'est pas installé ${neutre}"
-        sleep 3
+        echo -e "${rouge} [ NOK ] Volatility3 ou csv2xlsx : au moins une des 2 applications n'est pas installée ${neutre}"
+        decompte 3
     fi    
 }
 
@@ -471,7 +478,7 @@ function reginst() {
         # Copier rip.pl.linux dans /usr/local/bin/rip.pl
         cp regripper/rip.pl.linux /usr/local/bin/rip.pl && echo -e "${vert}Succès /usr/local/src/regripper/rip.pl.linux copié dans /usr/local/bin/rip.pl${neutre}"
         /usr/local/bin/rip.pl  && echo -e "${vert}\nrip.pl a été mis dans : /usr/local/bin/rip.pl !\n\nLe fichier d'origine se trouve dans : /usr/local/src/regripper/rip.pl\n\n${neutre}"
-        sleep 3
+        decompte 3
     fi
 }
 
@@ -481,7 +488,7 @@ function burinst() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation des outils de bureautique ---- ]${neutre}\n"
     apt update && apt install -y libemail-outlook-message-perl pst-utils thunderbird  && echo -e "${vert} [ OK ] Outils Bureautique installés ${neutre}"
-    sleep 3
+    decompte 3
 }
 
 ########    LES OUTILS DE DISQUES
@@ -490,7 +497,7 @@ function diskinst() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation des outils de disque ---- ]${neutre}\n"
     apt update && apt install -y guymager qemu-utils libewf-dev ewf-tools hdparm sdparm && echo -e "${vert} [ OK ] Outils de disques installés ${neutre}"
-    sleep 3
+    decompte 3
 }
 
 ########    QUELQUES LOGICIELS FORENSIC 
@@ -522,7 +529,7 @@ function mftinst() {
     chmod -R 750 /home/"$utilisateur"/.shimcacheparser/ && echo -e "${vert} [ OK ] ShimCacheParser copié dans : /home/$utilisateur/.shimcacheparser/  ${neutre}"
     chown -R "$utilisateur": /home/"$utilisateur"/.shimcacheparser/
     ln -s /home/"$utilisateur"/.shimcacheparser/ShimCacheParser.py /usr/local/bin/ShimCacheParser.py
-    sleep 3
+    decompte 3
 }
 
 ########    INSTALLER LA SUITE SLEUTHKIT
@@ -537,7 +544,7 @@ function sleuthkitInstall() {
     ./configure 
     make
     make install && echo -e "${vert} [ OK ] Suite Sleuthkit installée ${neutre}"
-    sleep 3
+    decompte 3
 }
 
 ########    INSTALLER MFT DUMP      https://github.com/omerbenamram/mft
@@ -552,7 +559,7 @@ function mftdumpinst() {
         chmod +x /opt/mft_dump
         ln -s /opt/mft_dump /usr/local/bin/mft_dump
         mft_dump -h && echo -e "${vert} [ OK ] mft_dump installé ${neutre}"
-        sleep 3
+        decompte 3
     fi
 }
 
@@ -574,7 +581,7 @@ function loginstall() {
     chmod 755 /opt/evtx2log.sh
     ln -s /opt/evtx2log.sh /usr/local/bin/
     evtx2log.sh
-    sleep 3
+    decompte 3
 }
 
 
@@ -606,7 +613,7 @@ function forall() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de FORENSICS-ALL ---- ]${neutre}\n"
     apt update && apt install -y forensics-all && echo -e "${vert} [ OK ] forensics-all installé ${neutre}"
-    sleep 3
+    decompte 3
 }
 
 ########    FORENSICS-EXTRA
@@ -615,7 +622,7 @@ function forextra() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de FORENSICS-EXTRA ---- ]${neutre}\n"
     apt update && apt install -y forensics-extra && echo -e "${vert} [ OK ] forensics-extra installé ${neutre}"
-    sleep 3
+    decompte 3
 }
 
 ########    FORENSICS-EXTRA-GUI
@@ -624,7 +631,7 @@ function forextragui() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de FORENSICS-EXTRA-GUI ---- ]${neutre}\n"
     apt update && apt install -y forensics-extra-gui && echo -e "${vert} [ OK ] forensics-extra-gui installé ${neutre}"
-    sleep 3
+    decompte 3
 }
 
 ########    INSTALLATION DE VIRTUALBOX 6.1
@@ -670,10 +677,30 @@ function vbox() {
         # Configuration pour le démarrage sur clé USB
         usermod -aG disk "$utilisateur" && echo -e "${vert} [ OK ] Configuration pour démarrage sur clé USB configuré ${neutre}"
         echo -e "${vert}[ ---- Fin d'installation et de configuration Virtualbox ---- ]${neutre}"
-        sleep 3
+        decompte 3
     else
         echo -e "${rouge}Vous êtes sur une machine virtuelle, pas d'installation${neutre}"
-        sleep 3
+        decompte 3
+    fi
+}
+
+########    YARA
+
+function yarainstall() {
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de YARA ---- ]${neutre}\n"
+    dpkgyara=$(dpkg -l | awk -F " " '{print $2}' | grep -E "^yara$")
+    if [ "$dpkgyara" != "yara" ] ; then
+        apt update && apt install -y libyara-dev libyara8 yara yara-doc
+        yara -h && echo -e "${vert} [ OK ] yara pour la recherche de pattern est installé ${neutre}"
+        sleep 2
+        yarac -h && echo -e "${vert} [ OK ] yarac pour la compilation est installé ${neutre}"
+        sleep 2
+        versionYara=$(yara -v) && echo -e "${vert} [ OK ] Version de yara installée : yara $versionYara ${neutre}"
+        decompte 3
+    else
+        echo -e "${vert} [ OK ] yara est déjà installé : version yara $versionYara ${neutre}"
+        decompte 3
     fi
 }
 
@@ -711,7 +738,7 @@ echo " "
     echo -e "\e[3C${bleu}[ --    ${souligne}INSTALLATION DE BASE${neutrePolice}${bleu}     -- ]${neutre}"    
     echo -e "\t[  ${vert}0${neutre} ] - Modification du fichier source.list HTTP vers HTTPS + Mise à jour des paquets"    
     echo -e "\t[  ${vert}1${neutre} ] - Mise à jour des paquets"
-    echo -e "\t[  ${vert}2${neutre} ] - Installation des logiciels de base + configuration des applications : Wireshark / déscativation IPv6 / Activation du pavé numérique / Tmux / Vim / Date-Heure bash_history"
+    echo -e "\t[  ${vert}2${neutre} ] - Installation des logiciels de base + configuration des applications : Wireshark / déscativation IPv6 / Activation du pavé numérique / Tmux / Vim / Date-Heure bash_history ${rouge}(Obligatoire)${neutre}"
     echo -e "\t[  ${vert}3${neutre} ] - Création de l'architecture des dossiers : pour montage des disques windows et linux à analyser"
     
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANTI-VIRUS${neutrePolice}${bleu}     -- ]${neutre}"    
@@ -721,9 +748,9 @@ echo " "
     echo -e "\t[ ${vert}20${neutre} ] - Installation des outils de Reverse : gdb-peda"
     
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE RAM${neutrePolice}${bleu}     -- ]${neutre}"    
-    echo -e "\t[ ${vert}30${neutre} ] - Installation de volatility 2.6"
-    echo -e "\t[ ${vert}31${neutre} ] - Installation de volatility 3"
-    #echo -e "\t[ ${vert}32${neutre} ] - Installation de ramParserVolatility3 : parsing .raw avec Vol3.py + export CSV / XLSX "
+    echo -e "\t[ ${vert}30${neutre} ] - Installation de volatility 2.6    ${rouge}(https://github.com/volatilityfoundation/volatility.git)${neutre}"
+    echo -e "\t[ ${vert}31${neutre} ] - Installation de volatility 3    ${rouge}(https://github.com/volatilityfoundation/volatility3.git)${neutre}"
+    echo -e "\t[ ${vert}32${neutre} ] - Installation de ramParserVolatility3 : parsing .raw avec Vol3.py + export en CSV / XLSX    ${rouge}(https://github.com/yakisyst3m/IFT-install_forensics_tools/res/ramParserVolatility3.sh)${neutre}"
     
     echo -e "\n\e[3C${bleu}[ --    ${souligne}ANALYSE REGISTRE${neutrePolice}${bleu}     -- ]${neutre}"
     echo -e "\t[ ${vert}40${neutre} ] - Installation de Regripper : analyse registre Windows"
@@ -736,10 +763,10 @@ echo " "
     echo -e "\t[ ${vert}61${neutre} ] - Installation de l'outil de disque E01 : Pyhton ImageMounter pour montage auto d'une image E01 encase"
     echo -e "\t[ ${vert}62${neutre} ] - Installation des Outils de Timeline et Artefacts Windows : La suite plaso / ewf / olevba3 / prefetch / ShimCacheParser"
     echo -e "\t[ ${vert}63${neutre} ] - Installation de la suite sleuthkit : mmls / fls / icat / mactime"
-    echo -e "\t[ ${vert}64${neutre} ] - Installation de mft_dump : parser le fichier \$MFT      (https://github.com/omerbenamram/mft)"
+    echo -e "\t[ ${vert}64${neutre} ] - Installation de mft_dump : parser le fichier \$MFT      ${rouge}(https://github.com/omerbenamram/mft)${neutre}"
     
     echo -e "\n\e[3C${bleu}[ --    ${souligne}LOG - CONVERSION - PARSING - COLLECTE${neutrePolice}${bleu}   -- ]${neutre}"
-    echo -e "\t[ ${vert}70${neutre} ] - Installation des outils d'analyse de log : auditd / evtx2log    (https://github.com/yakisyst3m/evtx2log)"
+    echo -e "\t[ ${vert}70${neutre} ] - Installation des outils d'analyse de log : auditd / evtx2log    ${rouge}(https://github.com/yakisyst3m/evtx2log)${neutre}"
     
     echo -e "\n\e[3C${bleu}[ --    ${souligne}OUTILS FORENSICS SUPPLEMENTAIRES${neutrePolice}${bleu}     -- ]${neutre}"    
     echo -e "\t[ ${vert}80${neutre} ] - Installation du paquet : forensics-all"
@@ -750,7 +777,13 @@ echo " "
     echo -e "\t[ ${vert}90${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
 
     echo -e "\n\e[3C${bleu}[ --    ${souligne}CONVERTISSEURS${neutrePolice}${bleu}     -- ]${neutre}"
-    echo -e "\t[ ${vert}100${neutre} ] - Python3 : \"csv2xlsx.py\" convertir CSV en XLSX - délimiteur TAB      (https://gist.github.com/konrad/4154786)"
+    echo -e "\t[ ${vert}100${neutre} ] - Installation de l'outil : csv2xlsx pour convertir les CSV en XLSX - choix : délimiteur / nb colonnes-lignes / encoding..      ${rouge}(https://gitlab.com/DerLinkshaender/csv2xlsx)${neutre}"
+
+    echo -e "\n\e[3C${bleu}[ --    ${souligne}YARA${neutrePolice}${bleu}     -- ]${neutre}"
+    echo -e "\t[ ${vert}110${neutre} ] - Installation des outils Yara et yarac: recherche de Pattern pour la détection de Malware"
+
+#    echo -e "\n\e[3C${bleu}[ --    ${souligne}SIGMA${neutrePolice}${bleu}     -- ]${neutre}"
+#    echo -e "\t[ ${vert}120${neutre} ] - Installation de SIGMA : règles de détection et de partage pour les SIEM"
 
     echo -e "\n\t[ ${vert}200${neutre} ] - ${vert}Tout installer (Sauf N°0 sourcelist)${neutre}"
     echo -e "\t[  ${rouge}F${neutre}  ] - Taper F pour finaliser l'installation..."
@@ -776,8 +809,8 @@ echo " "
         volat2 ; validChang ;;
     "31")
         volat3 ; validChang ;;
-    #"32")
-        #volat3 ; convertinstall ; ramParserinstall ;;
+    "32")
+        volat3 ; convertinstall ; ramParserinstall ;;
     "40")
         reginst ;;
     "50")
@@ -803,11 +836,13 @@ echo " "
     "90")
         vbox ;;
    "100")
-        convertinstall ;;    
+        convertinstall ;;
+   "110")
+        yarainstall ;;
    "200")
         mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; convertinstall ; ramParserinstall ;\
         reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; mftdumpinst ;\
-        loginstall ; forall ; forextra ; forextragui ; vbox ;;
+        loginstall ; forall ; forextra ; forextragui ; vbox ; yarainstall ;;
     f|F) break ;;
     q|Q) exit ;;
     *) continue ;;

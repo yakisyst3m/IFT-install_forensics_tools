@@ -5,17 +5,18 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/yakisyst3m/post_install_linux_install_forensics_tools) ![GitHub release-date](https://img.shields.io/github/release-date/yakisyst3m/post_install_linux_install_forensics_tools)
 
 ## 1 - Présentation :
-**Il y a 1 Script de post-installation pour la configuration automatique des outils Forensics pour Debian et Ubuntu :**    
-- Une fois Debian ou Ubuntu installé, il suffit de lancer ce script pour obtenir les logiciels nécessaires pour faire à minima du forensic !
+**Script de post-installation pour l'installation et la configuration automatique des outils Forensics pour Debian et Ubuntu :**    
+- Un menu est présent pour installer les outils qui vous intéressent !
 
 
 ## 2 - Installation :
 - Lancer le programme : [ Lancer en **root** ]
   ```
+  toto@debian:~$ chmod +x *.sh
   toto@debian:~$ sudo ./install.sh
   ```
 <p align="center">
-<img src="/img/ift.png" alt="IFT MENU" width="1300"/>
+<img src="/img/iftv2.2.png" alt="IFT MENU" width="1300"/>
 </p>
   
 ## Quelques infos : Liste des Logiciels installés + exemples d'utilisation :
@@ -55,7 +56,7 @@
 - ImageMounter (montage auto des images .E01)  
 *Exemple :*  
 ```
-imount image.E01
+imout image.E01
 ```
 
 :radio_button: Hexadécimal :
@@ -90,13 +91,13 @@ vol2.py -h
 ```
 vol3.py -h
 ``` 
-- ramParser  
+- ramParserVolatility3
 Placer toutes les images .raw des mémoires RAM dans un dossier et lancer l'application.  
 L'application va faire l'export CSV et XLSX des résultats de chacun des plugins (configurés dans le fichier /usr/local/bin/ramParserVolatility3) dans un dossier nommé par le nom de l'image.raw.  
-Il faut lancer l'application sans paramètre car elle cherche en boucle dans le dossier tous les .raw.  
 ```
 cd RAM/
-ramParserVolatility3 
+ramParserVolatility3 -h
+ramParserVolatility3 -d dossier
 ```  
 
 :radio_button: Artefacts Windows - LES RUCHES :
@@ -137,8 +138,8 @@ python2.7 ShimCacheParser.py -i "/mnt/win1/Windows/System32/config/SYSTEM"| grep
 - mactime (suite sleuthkit) `Création d'une timeline à partir d'un fichier BODY`  
 *Exemple création Timeline:*
 ```
-fls -r -o [offset_partition] image.dd –m C: >> mft_export.body
-mactime –b –d export.body > mactime.csv
+fls -r -o [offset_partition] image.dd –m C: >> /cases/w_01/mft/mft_export.body
+mactime –b –d /cases/w_01/mft/export.body > /cases/w_01/mft/mactime.csv
 ```
 *Exemple Lister les fichiers et répertoires récemment supprimés :*
 ```
@@ -153,12 +154,12 @@ mmls dump_disque.raw
 - icat (suite sleuthkit) `Exporter un fichier/MFT à partir de son inode`  
 *Exemple Export fichier MFT inode = 0 :*
 ```
-icat -o [offset_partition] dump_disque.raw 0 > mft.raw
+icat -o [offset_partition] dump_disque.raw 0 > /cases/w_01/mft/mft.raw
 ```
 - analyseMFT.py `Parser la MFT`  
 *Exemple :*
 ```
-analyzeMFT.py -f mft.raw -o mft.csv
+analyzeMFT.py -f /cases/w_01/mft/mft.raw -o /cases/w_01/mft/mft.csv
 ```
 - mft_dump (https://github.com/omerbenamram/mft) `Parser le fichier $MFT`  
 fichier de sortie : JSON.
@@ -179,8 +180,8 @@ mft_dump --extract-resident-streams <output_directory> -o json <input_file>
 - psort (plaso) `Créer une timeline semi-auto en 2 étapes : étape 2/2`  
 *Exemple création Timeline:*
 ```
-log2timeline.py --parsers mft timeline.plaso dump_disque.raw
-psort.py -o l2tcsv -w timeline.csv timeline.plaso
+log2timeline.py --parsers mft /cases/w_01/timeline/timeline.plaso /cases/w_01/timeline/dump_disque.raw
+psort.py -o l2tcsv -w /cases/w_01/timeline/timeline.csv /cases/w_01/timeline/timeline.plaso
 ```
 - psteal (plasa) `Créer une timeline automatiquement !!!! Très LONG à générer - pas top`  
 *Exemple création Timeline:*
@@ -221,29 +222,28 @@ sqlite3 -header -csv /home/toto/.mozilla/firefox/zvz8ux8q.default-esr/places.sql
 ```  
 *Exemple Firefox Windows:*
 ```
-chemin=$(find /mnt/win1/Users/ -name "places.sqlite") ; for nom in $(echo $chemin | awk -F "/" '{print $5 }') ; do sqlite3 -header -csv  $chemin " select datetime(last_visit_date/1000000, 'unixepoch', 'localtime') AS last_visit_date, url from moz_places " > Wn_histFfox-$nom-$(date +%s).csv \; 2>/dev/null ; done
+chemin=$(find /mnt/win1/Users/ -name "places.sqlite") ; for nom in $(echo $chemin | awk -F "/" '{print $5 }') ; do sqlite3 -header -csv  $chemin " select datetime(last_visit_date/1000000, 'unixepoch', 'localtime') AS last_visit_date, url from moz_places " > /cases/w_01/firefoxHistory/Wn_histFfox-$nom-$(date +%s).csv \; 2>/dev/null ; done
 ```  
 *Exemple Firefox Linux:*
 ```
-chemin=$(find /mnt/linux1/home/ -name "places.sqlite") ; for nom in $(echo $chemin | awk -F "/" '{print $5 }') ; do sqlite3 -header -csv  $chemin " select datetime(last_visit_date/1000000, 'unixepoch', 'localtime') AS last_visit_date, url from moz_places " > lx_histFfox-$nom-$(date +%s).csv \; 2>/dev/null ; done
+chemin=$(find /mnt/linux1/home/ -name "places.sqlite") ; for nom in $(echo $chemin | awk -F "/" '{print $5 }') ; do sqlite3 -header -csv  $chemin " select datetime(last_visit_date/1000000, 'unixepoch', 'localtime') AS last_visit_date, url from moz_places " > /cases/w_01/firefoxHistory/lx_histFfox-$nom-$(date +%s).csv \; 2>/dev/null ; done
 ```
 
-:radio_button: Export des boîtes mails :  
-- thunderbird `Boîte mail Open Source`  
+:radio_button: Export des boîtes mails :
 - pff-tools ` Cela va créer un dossier par boîte mail`  
-*Exemple : pour recherche en ligne de commandes*
+*Exemple :*
 ```
 pffexport user@domaine.pst
 ```
+:radio_button: Les outils bureautiques :
 - pst-utils ` convertir une boîte mails .pst en boîte mails .eml `  
-*Exemple pour être lu par thunderbird :*
+*Exemple :*
 ```
 readpst -M -u -e -b toto.tutu@domaine.pst
 ```
-- libemail-outlook-message-perl `convertir 1 message mail.msg en mail.eml`  
-*Exemple pour lire 1 seul mail :*
+- libemail-outlook-message-perl `convertir un message .msg en .eml`
 ```
 msgconvert monMessage.msg
 ```
-  
+- thunderbird `Boîte mail Open Source`  
 
