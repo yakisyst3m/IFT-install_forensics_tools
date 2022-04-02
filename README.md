@@ -93,9 +93,8 @@ vol3.py -h
 ``` 
 - ramParserVolatility3
 Placer toutes les images .raw des mémoires RAM dans un dossier et lancer l'application.  
-L'application va faire l'export CSV et XLSX des résultats de chacun des plugins (configurés dans le fichier /usr/local/bin/ramParserVolatility3) dans un dossier nommé par le nom de l'image.raw.  
+L'application va faire l'export CSV et XLSX des résultats de chacun des plugins.  
 ```
-cd RAM/
 ramParserVolatility3 -h
 ramParserVolatility3 -d dossier
 ```  
