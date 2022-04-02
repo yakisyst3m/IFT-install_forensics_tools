@@ -1,11 +1,13 @@
 #  IFT  [ INSTALL FORENSICS TOOLS ]
 #  
 # Installation automatique des Outils Forensics
-## Cette installation concerne Ubuntu et Debian
+## Compatibilité :  
+- Ubuntu : [ OK ]  
+- Debian : [ OK ]  
 ![GitHub last commit](https://img.shields.io/github/last-commit/yakisyst3m/post_install_linux_install_forensics_tools) ![GitHub release-date](https://img.shields.io/github/release-date/yakisyst3m/post_install_linux_install_forensics_tools)
 
 ## 1 - Présentation :
-**Script de post-installation pour l'installation et la configuration automatique des outils Forensics pour Debian et Ubuntu :**    
+**Script d'installation et de configuration des outils Forensics pour Debian et Ubuntu :**    
 - Un menu est présent pour installer les outils qui vous intéressent !
 
 
