@@ -16,7 +16,7 @@ if [ "$uidutilisateur" = "0" ] ; then
         cd "$cheminInstall"
         chmod -R 750 /home/"$utilisateur"/Documents/
         chown -R "$utilisateur": /home/"$utilisateur"/Documents/
-        ./Post_install-FSICS_PRO.sh
+        ./forencisTools.sh
     else
         rm -rf "$cheminInstall"
         mkdir "$cheminInstall"
@@ -24,7 +24,7 @@ if [ "$uidutilisateur" = "0" ] ; then
         cd "$cheminInstall"
         chmod -R 750 /home/"$utilisateur"/Documents/
         chown -R "$utilisateur": /home/"$utilisateur"/Documents/
-        ./Post_install-FSICS_PRO.sh
+        ./forencisTools.sh
     fi
 else
     echo -e "${rouge}Veuillez utiliser 'sudo' ou root !!${neutre}"
