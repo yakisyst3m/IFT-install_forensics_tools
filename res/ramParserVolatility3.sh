@@ -48,7 +48,7 @@ imagesRaw=$(find $cheminImagesRaw -maxdepth 1 -type f -regextype posix-egrep -re
 chemin=$(pwd)
 
 # Fonctions
-function cvv2xlsx() {
+function csv2xlsx() {
     for fichierCSV in $(ls "$UCNAME"/CSV/*.csv) ; do
         csv2xlsx -infile $fichierCSV -outfile $fichierCSV.xlsx -colsep '\t' -columns 0-20       # Convertir les CSV en XLSX avec comme délimiteur "tab"
         mv "$UCNAME"/CSV/*.xlsx "$UCNAME"/XLSX/
@@ -188,7 +188,7 @@ for imageTrouvee in $(ls $imagesRaw) ; do
 
 
         # Convertir les fichiers CSV en XLSX
-        cvv2xlsx
+        csv2xlsx
 
         # Contrôle d'intégrité des fichiers CSV et XLSX  
         ControleIntegriteFic
