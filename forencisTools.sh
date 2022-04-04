@@ -266,7 +266,7 @@ function creerrepertoires() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Création des dossiers qui contiendront les points de montages des disques, RAM, Artefacts Windows et Linux ---- ]${neutre}\n"
     if [[ ! -d "/cases" ]] ; then
-        mkdir -p /cases/artefacts/{win_Artefacts_01,win_Artefacts_02,win_Artefacts_03,win_Artefacts_04}/{firefoxHistory,pst/PJ_outlook,prefetch,malware,mft,dump,evtx,timeline,hivelist,network,filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil windows : /casesartefacts/win_XXX Configuré ${neutre}"
+        mkdir -p /cases/artefacts/{win_Artefacts_01,win_Artefacts_02,win_Artefacts_03,win_Artefacts_04}/{firefoxHistory,pst/PJ_outlook,prefetch,malware,mft,dump,evtx,timeline,hivelist,network,filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil windows : /cases/artefacts/win_XXX Configuré ${neutre}"
 
         #    Cas d'analyse linux
         mkdir -p /cases/artefacts/{linux_Artefacts_01,linux_Artefacts_02,linux_Artefacts_03,linux_Artefacts_04}/{firefoxHistory,info_OS/{release,grub},cron,history/{cmd,viminfo},mail/{PJ_mail,},malware,dump,log,timeline,login_MDP,network/{ssh,},filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil linux : /cases/artefacts/linux_XXX Configuré ${neutre}"
