@@ -417,6 +417,7 @@ convertinstall() {
         decompte 3
     else
         echo -e "${vert} [ OK ] csv2xlsx est déjà installé ${neutre}"
+        decompte 3
     fi
 }
 
