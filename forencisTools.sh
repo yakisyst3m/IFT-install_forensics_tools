@@ -33,7 +33,7 @@
     VERSION_INITRD=$(basename /boot/initrd.img-$(uname -r) | cut -d "-" -f2-4)
     ENVBUREAU="/etc/mate/"
     GESTCONNECTION="/etc/lightdm/"
-    cheminInstall="/home/$utilisateur/Documents/Linux-Post_Install/"
+    cheminInstall="/home/$utilisateur/Documents/IFT-install_forensics_tools/"
 
     ETHNAME=$(ip a | grep "2: en" | tr " " ":" | awk -F ":" '{print $3}')
     ETHCHEMIN="/etc/sysconfig/network-scripts/ifcfg-$ETHNAME" # pour le futur : RedHat
