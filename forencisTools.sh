@@ -22,11 +22,12 @@
 # 2022 04 01    v2.1-8.5     Yara + Multiples corrections - ramParserVolatility3 de la version beta
 # 2022 04 02    v2.2         Multiples corrections - ramParserVolatility3 v1.0 + modification de csv2xlsx
 # 2022 04 05    v2.2-1.0     CyberChef
+# 2022 04 06    v2.2-1.1     wine32 + wine64 + guestmount
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
 # VARIABLES : LES VERSIONS / CHEMINS / COULEURS
-    versionIFT="v2.2-1.0 du 5 avril 2022"
+    versionIFT="v2.2-1.1 du 6 avril 2022"
     
     utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
     VERSION_OS=$(grep -E '^ID=' /etc/os-release | cut -d "=" -f2)
@@ -298,6 +299,15 @@ function claminst() {
         systemctl start clamav-freshclam.service && echo -e "${vert} [ OK ] Démarrage du service Clamav ${neutre}"
     fi
 }
+
+########  COPIE DE VSENCODE DANS DOCUMENTS
+
+function vsencodeinstall() {
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Copie du programme Windows vsencode dans Documents - désencoder fichier APEX ---- ]${neutre}\n"
+
+}
+
 
 ######## INSTALL GDB-PEDA
 
@@ -609,6 +619,20 @@ function imagemounterE01() {
     read
 }
 
+########    INSTALLER L'APPLICATION GUESTMOUNT - MONTAGE VMDK VDI
+
+function mountvmdkinstall() {
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de guestmount ---- ]${neutre}\n"
+        if [ ! -f "/usr/bin/guestmount" ] ; then
+            apt-get update && sudo apt install libguestfs-tools -y && echo -e "${vert} [ OK ] guestmount a été installé ${neutre}"
+            decompte 3 
+        else
+            echo -e "${vert} [ OK ] guestmount est déjà installé ${neutre}"
+            decompte 3            
+        fi
+}
+
 ########    FORENSICS-ALL
 
 function forall() {
@@ -685,6 +709,23 @@ function vbox() {
         decompte 3
     fi
 }
+
+########    WINE 32 + 64
+
+function wineinstall() {
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de CyberChef ---- ]${neutre}\n"
+        if [ ! -f "/usr/bin/wine64" ] ; then
+            dpkg --add-architecture i386
+            apt-get update && sudo apt install wine32 wine64 -y && echo -e "${vert} [ OK ] Wine a été installé ${neutre}"
+            wine --version
+            decompte 3 
+        else
+            echo -e "${vert} [ OK ] Wine est déjà installé ${neutre}"
+            decompte 3            
+        fi
+}
+
 
 ########    CYBERCHEF
 
@@ -766,6 +807,7 @@ echo " "
     
     echo -e "\e[3C${bleu}[ --    ${souligne}ANTI-VIRUS${neutrePolice}${bleu}     -- ]${neutre}"    
     echo -e "\t[  ${vert}10${neutre} ] - Installation de clamav + Mise à jour des signatures AV"
+    #echo -e "\t[  ${vert}11${neutre} ] - Copie de vsencode dans Documents/ : désencoder fichiers APEX"    
     
     echo -e "\e[3C${bleu}[ --    ${souligne}REVERSE ENGINEERING${neutrePolice}${bleu}     -- ]${neutre}"
     echo -e "\t[  ${vert}20${neutre} ] - Installation des outils de Reverse : gdb-peda"
@@ -787,6 +829,7 @@ echo " "
     echo -e "\t[  ${vert}62${neutre} ] - Installation des Outils de Timeline et Artefacts Windows : La suite plaso / ewf / olevba3 / prefetch / ShimCacheParser"
     echo -e "\t[  ${vert}63${neutre} ] - Installation de la suite sleuthkit : mmls / fls / icat / mactime"
     echo -e "\t[  ${vert}64${neutre} ] - Installation de mft_dump : parser le fichier \$MFT      ${rouge}(https://github.com/omerbenamram/mft)${neutre}"
+    echo -e "\t[  ${vert}65${neutre} ] - Installation de l'outil : guestmount - montage disque VMDK + VDI${neutre}"
     
     echo -e "\e[3C${bleu}[ --    ${souligne}LOG - CONVERSION - PARSING - COLLECTE${neutrePolice}${bleu}   -- ]${neutre}"
     echo -e "\t[  ${vert}70${neutre} ] - Installation des outils d'analyse de log : auditd / evtx2log    ${rouge}(https://github.com/yakisyst3m/evtx2log)${neutre}"
@@ -796,8 +839,9 @@ echo " "
     echo -e "\t[  ${vert}81${neutre} ] - Installation du paquet : forensics-extra"
     echo -e "\t[  ${vert}82${neutre} ] - Installation du paquet : forensics-extra-gui"
     
-    echo -e "\e[3C${bleu}[ --    ${souligne}VIRTUALISATION${neutrePolice}${bleu}     -- ]${neutre}"
+    echo -e "\e[3C${bleu}[ --    ${souligne}VIRTUALISATION - Emulateur${neutrePolice}${bleu}     -- ]${neutre}"
     echo -e "\t[  ${vert}90${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
+    echo -e "\t[  ${vert}91${neutre} ] - Installation et configuration de wine32 et wine64"
 
     echo -e "\e[3C${bleu}[ --    ${souligne}CONVERTISSEURS${neutrePolice}${bleu}     -- ]${neutre}"
     echo -e "\t[ ${vert}100${neutre} ] - Installation de l'outil : csv2xlsx pour convertir les CSV en XLSX - choix : délimiteur / nb colonnes-lignes / encoding..      ${rouge}(https://gitlab.com/DerLinkshaender/csv2xlsx)${neutre}"
@@ -827,6 +871,8 @@ echo " "
         creerrepertoires ;;
     "10")
         claminst ;;
+   # "11")
+    #    vsencodeinstall ;;        
     "20")
         gdbinst ;;
     "30")
@@ -848,7 +894,9 @@ echo " "
     "63")
         sleuthkitInstall ;;
     "64")
-        mftdumpinst ;;        
+        mftdumpinst ;;
+    "65")
+        mountvmdkinstall ;;               
     "70")
         loginstall ;;        
     "80")        
@@ -859,6 +907,8 @@ echo " "
         forextragui ;;
     "90")
         vbox ;;
+    "91")
+        wineinstall ;;        
    "100")
         convertinstall ;;
    "101")
@@ -867,8 +917,8 @@ echo " "
         yarainstall ;;
    "200")
         mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; convertinstall ; ramParserinstall ;\
-        reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; mftdumpinst ;\
-        loginstall ; forall ; forextra ; forextragui ; vbox ; yarainstall ;;
+        reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; mountvmdkinstall ; sleuthkitInstall ; mftdumpinst ;\
+        loginstall ; forall ; forextra ; forextragui ; vbox ; wineinstall ; yarainstall ;;
     f|F) break ;;
     q|Q) exit ;;
     *) continue ;;
