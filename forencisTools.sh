@@ -23,6 +23,7 @@
 # 2022 04 02    v2.2         Multiples corrections - ramParserVolatility3 v1.0 + modification de csv2xlsx
 # 2022 04 05    v2.2-1.0     CyberChef
 # 2022 04 06    v2.2-1.1     wine32 + wine64 + guestmount
+# 2022 04 09    v2.2-1.2     Corrrections bugs
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
@@ -94,7 +95,7 @@ function sourcelist() {
         echo "deb http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse"  >> /etc/apt/sources.list
         echo "deb http://fr.archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse"  >> /etc/apt/sources.list
         echo "deb-src http://fr.archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse"  >> /etc/apt/sources.list
-        echo "deb-src http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse"  >> /etc/apt/soyakisyst3m/post_install_linux_install_forensics_toolsurces.list
+        echo "deb-src http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse"  >> /etc/apt/sources.list
         echo "deb-src http://fr.archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse"  >> /etc/apt/sources.list
         echo "deb http://fr.archive.ubuntu.com/ubuntu/ focal-backports main restricted universe multiverse"  >> /etc/apt/sources.list
         echo -e "${vert} [ OK ] Sources.list $VERSION_OS à jour ${neutre}"
@@ -290,10 +291,10 @@ function claminst() {
         systemctl stop clamav-freshclam.service && echo -e "${vert} [ OK ] Arrêt du service Clamav ${neutre}"
         freshclam && echo -e "${vert} [ OK ] Mise à jour du service Clamav ${neutre}"
         systemctl start clamav-freshclam.service && echo -e "${vert} [ OK ] Démarrage du service Clamav ${neutre}"
-        sleep 3
+        decompte 3
     else
-        echo "${vert} [ OK ] Clamav est déjà installé poursuite avec la mise à jour ${neutre}"
-        sleep 2
+        echo -e "${vert} [ OK ] Clamav est déjà installé poursuite avec la mise à jour ${neutre}"
+        decompte 3
         systemctl stop clamav-freshclam.service && echo -e "${vert} [ OK ] Arrêt du service Clamav ${neutre}"
         freshclam && echo -e "${vert} [ OK ] Mise à jour du service Clamav ${neutre}"
         systemctl start clamav-freshclam.service && echo -e "${vert} [ OK ] Démarrage du service Clamav ${neutre}"
