@@ -910,7 +910,7 @@ echo " "
     "1")
         mjour ;;
     "2")
-        installbase ; config;;
+        installbase ; config ;;
     "3")
         creerrepertoires ;;
     "10")
@@ -961,8 +961,8 @@ echo " "
         yarainstall ;;
    "200")
         mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; volat2 ; volat3 ; convertinstall ; ramParserinstall ;\
-        reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; mountvmdkinstall ; sleuthkitInstall ; mftdumpinst ;\
-        loginstall ; forall ; forextra ; forextragui ; vbox ; wineinstall ; yarainstall ;;
+        reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; mftdumpinst ; mountvmdkinstall ;\
+        loginstall ; forall ; forextra ; forextragui ; vbox ; wineinstall ; cyberchefinstall ; yarainstall ;;
     f|F) break ;;
     q|Q) exit ;;
     *) continue ;;
