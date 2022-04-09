@@ -2,6 +2,8 @@
 
 # https://github.com/yakisyst3m 
 
+##################################      VERSIONS      ######################################"
+
 # 2022 01 22    v1.0
 # 2022 02 03    v1.1
 # 2022 02 17    v1.2
@@ -28,7 +30,7 @@
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
 # VARIABLES : LES VERSIONS / CHEMINS / COULEURS
-    versionIFT="v2.2-1.1 du 6 avril 2022"
+    versionIFT="v2.2-1.2 du 9 avril 2022"
     
     utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
     VERSION_OS=$(grep -E '^ID=' /etc/os-release | cut -d "=" -f2)
@@ -148,12 +150,20 @@ function installbase() {
         decompte 3
     fi
 
-    cp res/gufw.service /etc/systemd/system/ && echo -e "${vert} [ OK ] Firewall Gufw service en place à l'emplacement : /etc/systemd/system/${neutre}"
-    decompte 3
+	# Création du service Pare-feu
+    if [ ! -f "/etc/systemd/system/gufw.service" ] ; then
+		cp res/gufw.service /etc/systemd/system/ && echo -e "${vert} [ OK ] Firewall Gufw service en place à l'emplacement : /etc/systemd/system/gufw.service${neutre}"
+		decompte 3
+	else
+		echo -e "${vert} [ OK ] Firewall Gufw service déjà en place à l'emplacement : /etc/systemd/system/gufw.service${neutre}"
+	fi
 
+	# Ajout des outils d'environnement de Bureau Mate
     if [ -d "$ENVBUREAU" ] ; then
         apt install -y caja-open-terminal mate-desktop-environment-extras && echo -e "${vert} [ OK ] Outils d'environnement de Bureau Mate installés${neutre}"
         decompte 3
+    else
+		echo -e "${vert} [ OK ] Outils d'environnement de Bureau Mate déjà installés${neutre}"
     fi
 }
 
@@ -265,18 +275,26 @@ function config() {
 ######## ARCHITECTURE DOSSIER   TRAVAIL FORENSIC
 
 function creerrepertoires() {
-    #    Cas d'anlyse Windows
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Création des dossiers qui contiendront les points de montages des disques, RAM, Artefacts Windows et Linux ---- ]${neutre}\n"
     if [[ ! -d "/cases" ]] ; then
+		#    Dossier pour les Artefacts Windows
         mkdir -p /cases/artefacts/{win_Artefacts_01,win_Artefacts_02,win_Artefacts_03,win_Artefacts_04}/{firefoxHistory,pst/PJ_outlook,prefetch,malware,mft,dump,evtx,timeline,hivelist,network,filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil windows : /cases/artefacts/win_XXX Configuré ${neutre}"
-
-        #    Cas d'analyse linux
+		tree /cases/artefacts/
+		decompte 3
+        #    Dossier pour les Artefacts linux
         mkdir -p /cases/artefacts/{linux_Artefacts_01,linux_Artefacts_02,linux_Artefacts_03,linux_Artefacts_04}/{firefoxHistory,info_OS/{release,grub},cron,history/{cmd,viminfo},mail/{PJ_mail,},malware,dump,log,timeline,login_MDP,network/{ssh,},filecarving/{photorec,foremost}} && echo -e "${vert} [ OK ] accueil linux : /cases/artefacts/linux_XXX Configuré ${neutre}"
-
+		tree /cases/artefacts/
+		decompte 3
         #    Pour accueil des montages HDD ...
         mkdir -p /cases/montages/{usb1,usb2,usb3,usb4,win1,win2,linux1,linux2,encase1-E01,encase2-E01,encase3-E01,encase4-E01,ram1,ram2,raw1,raw2,raw3,raw4} && echo -e "${vert} [ OK ] accueil des point de montage des images : /cases/montages Configuré ${neutre}"    
+		tree /cases/montages/
         decompte 3
+    else
+		echo -e "${vert} [ OK ] Le dossier \"/cases\" existe déjà ${neutre}"
+		sleep 2
+		tree /cases/
+        decompte 3		    
     fi
 }
 
@@ -294,10 +312,10 @@ function claminst() {
         decompte 3
     else
         echo -e "${vert} [ OK ] Clamav est déjà installé poursuite avec la mise à jour ${neutre}"
-        decompte 3
         systemctl stop clamav-freshclam.service && echo -e "${vert} [ OK ] Arrêt du service Clamav ${neutre}"
         freshclam && echo -e "${vert} [ OK ] Mise à jour du service Clamav ${neutre}"
         systemctl start clamav-freshclam.service && echo -e "${vert} [ OK ] Démarrage du service Clamav ${neutre}"
+        decompte 3
     fi
 }
 
@@ -315,14 +333,25 @@ function vsencodeinstall() {
 function gdbinst() {
     # GDB-PEDA pour user
     echo -e "\n${bleu}[ ---- Début d'installation de gdb-peda ---- ]${neutre}\n"
-    apt update && apt install -y gdb
-    git clone https://github.com/longld/peda.git /home/"$utilisateur"/peda
-    echo "source /home/$utilisateur/peda/peda.py" >> /home/"$utilisateur"/.gdbinit  && echo -e "${vert} [ OK ] gdp-peda paramétré pour $utilisateur ${neutre}"
+    if [ ! -f "/home/${utilisateur}/.gdbinit" ] ; then
+		apt update && apt install -y gdb
+		git clone https://github.com/longld/peda.git /home/"$utilisateur"/peda
+		echo "source /home/$utilisateur/peda/peda.py" > /home/"$utilisateur"/.gdbinit  && echo -e "${vert} [ OK ] gdp-peda paramétré pour $utilisateur ${neutre}"
+		decompte 3
+	else
+		echo -e "${vert} [ OK ] gdp-peda est déjà paramétré pour $utilisateur ${neutre}"
+		decompte 3
+	fi
 
     # Pour root
-    cp -r /home/"$utilisateur"/peda /root/peda
-    echo "source /root/peda/peda.py" >> /root/.gdbinit  && echo -e "${vert} [ OK ] gdp-peda paramétré pour root ${neutre}"
-    decompte 3
+     if [ ! -f "/root/.gdbinit" ] ; then   
+		cp -r /home/"$utilisateur"/peda /root/peda
+		echo "source /root/peda/peda.py" > /root/.gdbinit  && echo -e "${vert} [ OK ] gdp-peda paramétré pour root ${neutre}"
+		decompte 3
+	else
+		echo -e "${vert} [ OK ] gdp-peda est déjà paramétré pour root ${neutre}"
+		decompte 3
+	fi
 }
 
 ######################## INSTALLATION DE VOLATILITY 2.6 OU 3 #####################################"
@@ -335,6 +364,7 @@ function volat2() {
     if [[ ! -f "/usr/local/bin/vol.py" ]] || [[ ! -f "/usr/local/bin/vol2.py" ]] ; then
         # Préparation avant installation
         cd /home/"$utilisateur"/Documents/
+        cd "$cheminInstall"/res/
         echo "Début de l'installation et des mises à jour de Volatility 2.6 :"
         echo "Installation des librairies"
         apt update && apt install -y build-essential git libdistorm3-dev yara libraw1394-11 libcapstone-dev capstone-tool tzdata  && echo -e "${vert} [ OK ] Installation des librairies pour Volatility 2.6 installés ${neutre}"
@@ -573,28 +603,36 @@ function mftdumpinst() {
         ln -s /opt/mft_dump /usr/local/bin/mft_dump
         mft_dump -h && echo -e "${vert} [ OK ] mft_dump installé ${neutre}"
         decompte 3
+    else
+		echo -e "${vert} [ OK ] mft_dump est déjà installé ${neutre}"
+		decompte 3
     fi
 }
 
 ########    INSTALLER LES OUTILS DE LOGS
 
 function loginstall() {
-    # auditd 
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation des outils de log ---- ]${neutre}\n"
-    cd "$cheminInstall"
-    mjour
-    apt install -y auditd 
-    
-    # evtx2log by Yakisyst3m
-    apt install -y rename libevtx-utils # dépendances
-    git clone https://github.com/yakisyst3m/evtx2log.git
-    mv evtx2log/ res/
-    cp res/evtx2log/evtx2log.sh /opt/
-    chmod 755 /opt/evtx2log.sh
-    ln -s /opt/evtx2log.sh /usr/local/bin/
-    evtx2log.sh
-    decompte 3
+    if [ ! -f "/opt/evtx2log.sh" ] ; then
+		cd "$cheminInstall"
+		mjour
+		# auditd
+		apt install -y auditd && echo -e "${vert} [ OK ] auditd a été installé ${neutre}"
+		decompte 3
+		# evtx2log by Yakisyst3m
+		apt install -y rename libevtx-utils # dépendances
+		git clone https://github.com/yakisyst3m/evtx2log.git
+		mv evtx2log/ res/
+		cp res/evtx2log/evtx2log.sh /opt/
+		chmod 755 /opt/evtx2log.sh
+		ln -s /opt/evtx2log.sh /usr/local/bin/evtx2log && echo -e "${vert} [ OK ] evtx2log a été installé ${neutre}"
+		evtx2log -h
+		decompte 3
+    else
+		echo -e "${vert} [ OK ] evtx2log est déjà installé ${neutre}"
+		decompte 3
+    fi
 }
 
 
@@ -665,57 +703,62 @@ function forextragui() {
 
 function vbox() {
     echo -e "\n##############################################\n"
-    # Vérification que l'on est sur une machine physique
-    os=$(dmidecode | grep -Ei '(version.*virt)' | awk -F " " '{print $2}')
-    if [ "$os" != "VirtualBox" ] ; then
-        
-        # Téléchargement des clés
-        echo -e "\n${bleu}[ ---- Début d'installation et de configuration Virtualbox ---- ]${neutre}\n"
-        echo -e "${jaune}[ Téléchargement et ajout des clés publiques de virtualbox ]${neutre}"
-        wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
-        wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+	echo -e "\n${bleu}[ ---- Début d'installation et de configuration Virtualbox ---- ]${neutre}\n"
+	if [ ! -f "/usr/bin/virtualbox" ] ; then
+		# Vérification que l'on est sur une machine physique
+		os=$(dmidecode | grep -Ei '(version.*virt)' | awk -F " " '{print $2}')
+		if [ "$os" != "VirtualBox" ] ; then
+			
+			# Téléchargement des clés
 
-        # Modification de la source.list et mise à jour
-        echo -e "${jaune}[ Modification des source.list ]${neutre}"
-        if [ "$VERSION_OS" = 'ubuntu' ] ; then
-            add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
-        fi
-        if [ "$VERSION_OS" = 'debian' ] ; then
-            echo "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" >> /etc/apt/sources.list
-        fi
-        mjour
+			echo -e "${jaune}[ Téléchargement et ajout des clés publiques de virtualbox ]${neutre}"
+			wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+			wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
 
-        # Installation de virtualbox
-        echo -e "${jaune}[ Installation de virtualbox ]${neutre}"
-        apt install -y virtualbox-6.1 && echo -e "${vert} [ OK ] Virtualbox $vboxVersion installé ${neutre}"
+			# Modification de la source.list et mise à jour
+			echo -e "${jaune}[ Modification des source.list ]${neutre}"
+			if [ "$VERSION_OS" = 'ubuntu' ] ; then
+				add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
+			fi
+			if [ "$VERSION_OS" = 'debian' ] ; then
+				echo "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" >> /etc/apt/sources.list
+			fi
+			mjour
 
-        # Téléchargement de l'Extension Pack
-        vboxVersion=$(dpkg -l | grep -i virtualbox | awk -F " " '{print $3}' | grep -oE '([0-9]{1}\.){2}[0-9]{1,3}')
-        echo -e "${jaune}[ Installation de l'extension Pack ]${neutre}"
-        wget https://download.virtualbox.org/virtualbox/"$vboxVersion"/Oracle_VM_VirtualBox_Extension_Pack-"$vboxVersion".vbox-extpack
-        
-        # Installation de l'Extension Pack + acceptation licence
-        echo ${ACCEPT_ORACLE_EXTPACK_LICENSE:='y'} | VBoxManage extpack install "Oracle_VM_VirtualBox_Extension_Pack-$vboxVersion.vbox-extpack" && echo -e "${vert} [ OK ] Extension Pack de Virtualbox $vboxVersion installée ${neutre}"
+			# Installation de virtualbox
+			echo -e "${jaune}[ Installation de virtualbox ]${neutre}"
+			apt install -y virtualbox-6.1 && echo -e "${vert} [ OK ] Virtualbox $vboxVersion installé ${neutre}"
 
-        # Configuration pour pouvoir utiliser l'USB
-        echo -e "${jaune}[ Configuration de Virtualbox pour utiliser les clés USB ]${neutre}"
-        usermod -aG vboxusers "$utilisateur" && echo -e "${vert} [ OK ] Utilisation de l'USB configuré ${neutre}"
+			# Téléchargement de l'Extension Pack
+			vboxVersion=$(dpkg -l | grep -i virtualbox | awk -F " " '{print $3}' | grep -oE '([0-9]{1}\.){2}[0-9]{1,3}')
+			echo -e "${jaune}[ Installation de l'extension Pack ]${neutre}"
+			wget https://download.virtualbox.org/virtualbox/"$vboxVersion"/Oracle_VM_VirtualBox_Extension_Pack-"$vboxVersion".vbox-extpack
+			
+			# Installation de l'Extension Pack + acceptation licence
+			echo ${ACCEPT_ORACLE_EXTPACK_LICENSE:='y'} | VBoxManage extpack install "Oracle_VM_VirtualBox_Extension_Pack-$vboxVersion.vbox-extpack" && echo -e "${vert} [ OK ] Extension Pack de Virtualbox $vboxVersion installée ${neutre}"
 
-        # Configuration pour le démarrage sur clé USB
-        usermod -aG disk "$utilisateur" && echo -e "${vert} [ OK ] Configuration pour démarrage sur clé USB configuré ${neutre}"
-        echo -e "${vert}[ ---- Fin d'installation et de configuration Virtualbox ---- ]${neutre}"
-        decompte 3
-    else
-        echo -e "${rouge}Vous êtes sur une machine virtuelle, pas d'installation${neutre}"
-        decompte 3
-    fi
+			# Configuration pour pouvoir utiliser l'USB
+			echo -e "${jaune}[ Configuration de Virtualbox pour utiliser les clés USB ]${neutre}"
+			usermod -aG vboxusers "$utilisateur" && echo -e "${vert} [ OK ] Utilisation de l'USB configuré ${neutre}"
+
+			# Configuration pour le démarrage sur clé USB
+			usermod -aG disk "$utilisateur" && echo -e "${vert} [ OK ] Configuration pour démarrage sur clé USB configuré ${neutre}"
+			echo -e "${vert}[ ---- Fin d'installation et de configuration Virtualbox ---- ]${neutre}"
+			decompte 3
+		else
+			echo -e "${rouge}Vous êtes sur une machine virtuelle, pas d'installation${neutre}"
+			decompte 3
+		fi
+	else
+		echo -e "${vert}Virtualbox est déjà installé${neutre}"
+	fi
 }
 
 ########    WINE 32 + 64
 
 function wineinstall() {
     echo -e "\n##############################################\n"
-    echo -e "\n${bleu}[ ---- Début d'installation de CyberChef ---- ]${neutre}\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de Wine32 et wine64 ---- ]${neutre}\n"
         if [ ! -f "/usr/bin/wine64" ] ; then
             dpkg --add-architecture i386
             apt-get update && sudo apt install wine32 wine64 -y && echo -e "${vert} [ OK ] Wine a été installé ${neutre}"
