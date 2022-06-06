@@ -23,14 +23,17 @@
 ## Quelques infos : Liste des Logiciels installés + exemples d'utilisation :
 :radio_button: Reverse :
 - gdb + gdb-peda
+- radare2
 
 :radio_button: Outils forensics :
 - forensics-all
 - forensics-extra
 - forensics-extra-gui
 
-:radio_button: Machines virtuelles :
+:radio_button: Machines virtuelles / emulateurs:
 - VirtualBox 6.1 + Extension Pack
+- wine32 - wine64
+- wine64-tools
 
 :radio_button: Analyse Réseau :
 - wireshark
