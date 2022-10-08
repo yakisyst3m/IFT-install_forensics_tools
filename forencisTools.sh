@@ -24,6 +24,7 @@
 # 2022 04 05    v2.2-1.0     CyberChef
 # 2022 04 06    v2.2-1.1     wine32 + wine64 + guestmount
 # 2022 06 06    v2.2-1.3     wine64-tools + dos2unix + radare2
+# 2022 10 08    v2.2-1.4     MAJ virtualbox + logiciel base
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
@@ -120,7 +121,7 @@ function mjour() {
 function installbase() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Installation des logiciels de base ---- ]${neutre}\n"
-    logicielsDeBase="vim htop bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip wireshark dos2unix"
+    logicielsDeBase="vim htop bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip wireshark dos2unix xattr"
     echo -e "${vert}$logicielsDeBase${neutre}\n"
     decompte 4
     apt update && apt install -y $logicielsDeBase && echo -e "${vert} [ OK ] Logiciels de Base installés ${neutre}"
@@ -308,7 +309,6 @@ function vsencodeinstall() {
     echo -e "\n${bleu}[ ---- Copie du programme Windows vsencode dans Documents - désencoder fichier APEX ---- ]${neutre}\n"
 
 }
-
 
 ######## INSTALL GDB-PEDA
 
@@ -684,21 +684,25 @@ function vbox() {
     # Vérification que l'on est sur une machine physique
     os=$(dmidecode | grep -Ei '(version.*virt)' | awk -F " " '{print $2}')
     if [ "$os" != "VirtualBox" ] ; then
+       
+        # Modification de la source.list et mise à jour
+        echo -e "${jaune}[ Modification des source.list ]${neutre}"
+        if [ "$VERSION_OS" = 'ubuntu' ] ; then
+            #add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
+            add-apt-repository "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian jammy contrib"
+        fi
+        if [ "$VERSION_OS" = 'debian' ] ; then
+            #echo "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" >> /etc/apt/sources.list
+            echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian bullseye contrib" >> /etc/apt/sources.list
+        fi
         
         # Téléchargement des clés
         echo -e "\n${bleu}[ ---- Début d'installation et de configuration Virtualbox ---- ]${neutre}\n"
         echo -e "${jaune}[ Téléchargement et ajout des clés publiques de virtualbox ]${neutre}"
-        wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
-        wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-
-        # Modification de la source.list et mise à jour
-        echo -e "${jaune}[ Modification des source.list ]${neutre}"
-        if [ "$VERSION_OS" = 'ubuntu' ] ; then
-            add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
-        fi
-        if [ "$VERSION_OS" = 'debian' ] ; then
-            echo "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" >> /etc/apt/sources.list
-        fi
+        #wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+        #wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+        wget -O- https://www.virtualbox.org/download/oracle_vbox_2016.asc | sudo gpg --dearmor --yes --output /usr/share/keyrings/oracle-virtualbox-2016.gpg
+        
         mjour
 
         # Installation de virtualbox
