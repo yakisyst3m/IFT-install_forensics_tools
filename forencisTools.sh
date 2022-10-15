@@ -25,14 +25,16 @@
 # 2022 04 06    v2.2-1.1     wine32 + wine64 + guestmount
 # 2022 06 06    v2.2-1.3     wine64-tools + dos2unix + radare2
 # 2022 10 08    v2.2-1.4     MAJ virtualbox + logiciel base
+# 2022 10 08    v2.2-1.5     UPGRADE to virtualbox 7.0
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
 # VARIABLES : LES VERSIONS / CHEMINS / COULEURS
-    versionIFT="v2.2-1.3 du 6 juin 2022"
+    versionIFT="v2.2-1.5 du 15 oct 2022"
     
     utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
     VERSION_OS=$(grep -E '^ID=' /etc/os-release | cut -d "=" -f2)
+    VERSION_DISTRI_DEBIAN=$(grep "VERSION_CODENAME" /etc/os-release | awk -F "=" '{print $2}')
     VERSION_KERNEL=$(uname -r)
     VERSION_INITRD=$(basename /boot/initrd.img-$(uname -r) | cut -d "-" -f2-4)
     ENVBUREAU="/etc/mate/"
@@ -75,13 +77,13 @@ function sourcelist() {
     # DEBIAN
     if [ "$VERSION_OS" = 'debian' ] ; then
         echo -e "\n${bleu}[ ---- Mise à jour de source.list de Debian ---- ]${neutre}\n"
-        echo "deb http://deb.debian.org/debian/ bullseye main non-free contrib" > /etc/apt/sources.list
-        echo "deb-src http://deb.debian.org/debian/ bullseye main non-free contrib" >> /etc/apt/sources.list
-        echo "deb http://security.debian.org/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list
-        echo "deb-src http://security.debian.org/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list
-        echo "deb http://deb.debian.org/debian/ bullseye-updates main contrib non-free" >> /etc/apt/sources.list
-        echo "deb-src http://deb.debian.org/debian/ bullseye-updates main contrib non-free" >> /etc/apt/sources.list
-        echo "deb http://deb.debian.org/debian bullseye-backports main contrib non-free" >> /etc/apt/sources.list
+        echo "deb http://deb.debian.org/debian/ $VERSION_DISTRI_DEBIAN main non-free contrib" > /etc/apt/sources.list
+        echo "deb-src http://deb.debian.org/debian/ $VERSION_DISTRI_DEBIAN main non-free contrib" >> /etc/apt/sources.list
+        echo "deb http://security.debian.org/debian-security $VERSION_DISTRI_DEBIAN-security main contrib non-free" >> /etc/apt/sources.list
+        echo "deb-src http://security.debian.org/debian-security $VERSION_DISTRI_DEBIAN-security main contrib non-free" >> /etc/apt/sources.list
+        echo "deb http://deb.debian.org/debian/ $VERSION_DISTRI_DEBIAN-updates main contrib non-free" >> /etc/apt/sources.list
+        echo "deb-src http://deb.debian.org/debian/ $VERSION_DISTRI_DEBIAN-updates main contrib non-free" >> /etc/apt/sources.list
+        echo "deb http://deb.debian.org/debian $VERSION_DISTRI_DEBIAN-backports main contrib non-free" >> /etc/apt/sources.list
         echo -e "${vert} [ OK ] Sources.list $VERSION_OS à jour ${neutre}"
         apt update && apt install -y apt-transport-https
         sed -i 's/http/https/g' /etc/apt/sources.list
@@ -422,7 +424,7 @@ function volat3() {
         # Lien pour lancer l'application
         ln -s /home/"$utilisateur"/.volatility3/vol3.py /usr/local/bin/vol3.py && echo -e "${vert} [ OK ] Volatility 3 a été installé ${neutre}"
         
-        # Test
+        # TestMAJ
         vol3.py -h
         decompte 3
     else
@@ -677,14 +679,15 @@ function forextragui() {
     decompte 3
 }
 
-########    INSTALLATION DE VIRTUALBOX 6.1
+########    INSTALLATION DE VIRTUALBOX 7.0
 
 function vbox() {
     echo -e "\n##############################################\n"
     # Vérification que l'on est sur une machine physique
+    vboxVersion=$(dpkg -l | grep -i virtualbox | awk -F " " '{print $3}' | grep -oE '([0-9]{1}\.){2}[0-9]{1,3}' | sort | tail -1)
     os=$(dmidecode | grep -Ei '(version.*virt)' | awk -F " " '{print $2}')
+    
     if [ "$os" != "VirtualBox" ] ; then
-       
         # Modification de la source.list et mise à jour
         echo -e "${jaune}[ Modification des source.list ]${neutre}"
         if [ "$VERSION_OS" = 'ubuntu' ] ; then
@@ -693,7 +696,7 @@ function vbox() {
         fi
         if [ "$VERSION_OS" = 'debian' ] ; then
             #echo "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" >> /etc/apt/sources.list
-            echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian bullseye contrib" >> /etc/apt/sources.list
+            echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian $VERSION_DISTRI_DEBIAN contrib" >> /etc/apt/sources.list
         fi
         
         # Téléchargement des clés
@@ -707,10 +710,9 @@ function vbox() {
 
         # Installation de virtualbox
         echo -e "${jaune}[ Installation de virtualbox ]${neutre}"
-        apt install -y virtualbox-6.1 && echo -e "${vert} [ OK ] Virtualbox $vboxVersion installé ${neutre}"
+        apt install -y virtualbox-7.0 && echo -e "${vert} [ OK ] Virtualbox $vboxVersion installé ${neutre}"
 
         # Téléchargement de l'Extension Pack
-        vboxVersion=$(dpkg -l | grep -i virtualbox | awk -F " " '{print $3}' | grep -oE '([0-9]{1}\.){2}[0-9]{1,3}')
         echo -e "${jaune}[ Installation de l'extension Pack ]${neutre}"
         wget https://download.virtualbox.org/virtualbox/"$vboxVersion"/Oracle_VM_VirtualBox_Extension_Pack-"$vboxVersion".vbox-extpack
         
