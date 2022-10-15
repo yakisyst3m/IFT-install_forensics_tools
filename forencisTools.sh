@@ -864,7 +864,7 @@ echo " "
     echo -e "\t[  ${vert}82${neutre} ] - Installation du paquet : forensics-extra-gui"
     
     echo -e "\e[3C${bleu}[ --    ${souligne}VIRTUALISATION - Emulateur${neutrePolice}${bleu}     -- ]${neutre}"
-    echo -e "\t[  ${vert}90${neutre} ] - Installation et configuration de Virtualbox 6.1 + son Extension Pack"
+    echo -e "\t[  ${vert}90${neutre} ] - Installation et configuration de Virtualbox 7.0 + son Extension Pack"
     echo -e "\t[  ${vert}91${neutre} ] - Installation et configuration de wine32 et wine64"
 
     echo -e "\e[3C${bleu}[ --    ${souligne}CONVERTISSEURS${neutrePolice}${bleu}     -- ]${neutre}"
