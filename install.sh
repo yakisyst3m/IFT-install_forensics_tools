@@ -18,9 +18,9 @@ if [ "$uidutilisateur" = "0" ] ; then
         chown -R "$utilisateur": /home/"$utilisateur"/Documents/
         ./forencisTools.sh
     else
-        rm -rf "$cheminInstall"
-        mkdir "$cheminInstall"
-        cp -r ./* "$cheminInstall"
+        #rm -rf "$cheminInstall"
+        #mkdir "$cheminInstall"
+        #cp -r ./* "$cheminInstall"
         cd "$cheminInstall"
         chmod -R 750 /home/"$utilisateur"/Documents/
         chown -R "$utilisateur": /home/"$utilisateur"/Documents/
