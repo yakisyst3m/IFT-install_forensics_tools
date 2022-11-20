@@ -26,6 +26,8 @@
 # 2022 06 06    v2.2-1.3     wine64-tools + dos2unix + radare2
 # 2022 10 08    v2.2-1.4     MAJ virtualbox + logiciel base
 # 2022 10 08    v2.2-1.5     UPGRADE to virtualbox 7.0
+# 2022 10 23    v2.2-1.6     Correction install.sh
+# 2022 11 20    v2.2-1.7     Modif install CyberChef pour installation auto de la dernière version
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
