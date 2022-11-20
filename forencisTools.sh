@@ -757,7 +757,7 @@ function cyberchefinstall() {
     echo -e "\n${bleu}[ ---- Début d'installation de CyberChef ---- ]${neutre}\n"
     if [ ! -d "/opt/cyberchef/" ] ; then
         cd "$cheminInstall"/res
-        wget https://github.com/gchq/CyberChef/releases/download/v9.37.0/CyberChef_v9.37.0.zip
+        LOCATION=$(curl -s  https://api.github.com/repos/gchq/CyberChef/releases/latest | grep "browser_download_url" | awk '{ print $2 }' | sed 's/,$//' | sed 's/"//g') ; wget "$LOCATION"
         unzip CyberChef*.zip -d cyberchef
         cp -r cyberchef/ /opt/
         chmod -R 750 /opt/cyberchef
@@ -765,8 +765,16 @@ function cyberchefinstall() {
         ln -s /opt/cyberchef/CyberChef*.html /home/"$utilisateur"/Bureau/
         mv /home/"$utilisateur"/Bureau/CyberChef*.html /home/"$utilisateur"/Bureau/CyberChef && echo -e "${vert} [ OK ] CyberChef a été installé ${neutre}"
         decompte 3
-    else
-        echo -e "${vert} [ OK ] CyberChef est déjà installé ${neutre}"
+    elif [ -d "/opt/cyberchef/" ] ; then
+        echo -e "${vert} [ OK ] CyberChef est déjà installé, suppression de l'ancienne version avant réinstallation ${neutre}"
+        rm -rf /opt/cyberchef
+        LOCATION=$(curl -s  https://api.github.com/repos/gchq/CyberChef/releases/latest | grep "browser_download_url" | awk '{ print $2 }' | sed 's/,$//' | sed 's/"//g') ; wget "$LOCATION"
+        unzip CyberChef*.zip -d cyberchef
+        cp -r cyberchef/ /opt/
+        chmod -R 750 /opt/cyberchef
+        chown -R $utilisateur: /opt/cyberchef
+        ln -s /opt/cyberchef/CyberChef*.html /home/"$utilisateur"/Bureau/
+        mv /home/"$utilisateur"/Bureau/CyberChef*.html /home/"$utilisateur"/Bureau/CyberChef && echo -e "${vert} [ OK ] CyberChef a été installé ${neutre}"        
         decompte 3
     fi
 }
