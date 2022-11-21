@@ -29,11 +29,12 @@
 # 2022 10 23    v2.2-1.6     Correction install.sh
 # 2022 11 20    v2.2-1.7     Modif install CyberChef pour installation auto de la dernière version
 
+versionIFT="v2.2-1.7 du 20 nov 2022"
+
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
-# VARIABLES : LES VERSIONS / CHEMINS / COULEURS
-    versionIFT="v2.2-1.5 du 15 oct 2022"
-    
+# VARIABLES : CHEMINS / COULEURS
+      
     utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
     VERSION_OS=$(grep -E '^ID=' /etc/os-release | cut -d "=" -f2)
     VERSION_DISTRI_DEBIAN=$(grep "VERSION_CODENAME" /etc/os-release | awk -F "=" '{print $2}')
