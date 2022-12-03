@@ -28,7 +28,7 @@
 # 2022 10 08    v2.2-1.5     UPGRADE to virtualbox 7.0
 # 2022 10 23    v2.2-1.6     Correction install.sh
 # 2022 11 20    v2.2-1.7     Modif install CyberChef pour installation auto de la dernière version
-# 2022 12 03    v2.2-1.8     Powershell add
+# 2022 12 03    v2.2-1.8     Powershell add + UPX
 
 versionIFT="v2.2-1.7 du 20 nov 2022"
 
