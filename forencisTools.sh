@@ -28,6 +28,7 @@
 # 2022 10 08    v2.2-1.5     UPGRADE to virtualbox 7.0
 # 2022 10 23    v2.2-1.6     Correction install.sh
 # 2022 11 20    v2.2-1.7     Modif install CyberChef pour installation auto de la dernière version
+# 2022 12 03    v2.2-1.8     Powershell add
 
 versionIFT="v2.2-1.7 du 20 nov 2022"
 
@@ -802,6 +803,35 @@ function yarainstall() {
     fi
 }
 
+########    SCRIPTING
+
+powershellinstall() {
+      echo -e "\n##############################################\n"
+      echo -e "\n${bleu}[ ---- Début d'installation de powershell ---- ]${neutre}\n"
+      if [ ! -f "/usr/bin/pwsh" ] ; then
+            apt update  && apt install -y curl gnupg apt-transport-http
+            curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+            sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-debian-bullseye-prod bullseye main" > /etc/apt/sources.list.d/microsoft.list'
+            apt update && apt install -y powershell && echo -e "${vert} [ OK ] Powershell a été installé${neutre}"
+            decompte 3 
+      else
+            echo -e "${vert} [ OK ] Powershell est déjà installé${neutre}"
+            decompte 3      
+      fi
+}
+
+upxinstall() {
+      echo -e "\n##############################################\n"
+      echo -e "\n${bleu}[ ---- Début d'installation du Packer/Depacker UPX ---- ]${neutre}\n"
+      if [ ! -f "/usr/bin/upx" ] ; then
+            apt update  && apt install -y upx-ucl && echo -e "${vert} [ OK ] UPX a été installé${neutre}"
+            decompte 3 
+      else
+            echo -e "${vert} [ OK ] UPX est déjà installé${neutre}"
+            decompte 3      
+      fi
+}
+
 ######## VALIDATION DES CHANGEMENTS ###########################################################
 
 function validChang() {
@@ -885,6 +915,10 @@ echo " "
     echo -e "\e[3C${bleu}[ --    ${souligne}YARA${neutrePolice}${bleu}     -- ]${neutre}"
     echo -e "\t[ ${vert}110${neutre} ] - Installation des outils Yara et yarac: recherche de Pattern pour la détection de Malware"
 
+    echo -e "\e[3C${bleu}[ --    ${souligne}SCRIPTING${neutrePolice}${bleu}     -- ]${neutre}"
+    echo -e "\t[ ${vert}120${neutre} ] - Installation de powershell sous Linux"
+    echo -e "\t[ ${vert}121${neutre} ] - Installation du Packer/Depacker UPX"
+
 #    echo -e "\n\e[3C${bleu}[ --    ${souligne}SIGMA${neutrePolice}${bleu}     -- ]${neutre}"
 #    echo -e "\t[ ${vert}120${neutre} ] - Installation de SIGMA : règles de détection et de partage pour les SIEM"
 
@@ -952,6 +986,10 @@ echo " "
         cyberchefinstall ;;
    "110")
         yarainstall ;;
+   "120")
+        powershellinstall ;;
+   "121")
+        upxinstall ;;   
    "200")
         mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; radare2inst ; volat2 ; volat3 ; convertinstall ; ramParserinstall ;\
         reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; mountvmdkinstall ; sleuthkitInstall ; mftdumpinst ;\
