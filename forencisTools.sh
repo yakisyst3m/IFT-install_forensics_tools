@@ -30,7 +30,7 @@
 # 2022 11 20    v2.2-1.7     Modif install CyberChef pour installation auto de la dernière version
 # 2022 12 03    v2.2-1.8     Powershell add + UPX
 
-versionIFT="v2.2-1.7 du 20 nov 2022"
+versionIFT="v2.2-1.8 du 03 décembre 2022"
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
