@@ -993,7 +993,7 @@ echo " "
    "200")
         mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; radare2inst ; volat2 ; volat3 ; convertinstall ; ramParserinstall ;\
         reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; mountvmdkinstall ; sleuthkitInstall ; mftdumpinst ;\
-        loginstall ; forall ; forextra ; forextragui ; vbox ; wineinstall ; yarainstall ;;
+        loginstall ; forall ; forextra ; forextragui ; vbox ; wineinstall ; yarainstall ; powershellinstall ; upxinstall ;;
     f|F) break ;;
     q|Q) exit ;;
     *) continue ;;
