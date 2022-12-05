@@ -29,8 +29,9 @@
 # 2022 10 23    v2.2-1.6     Correction install.sh
 # 2022 11 20    v2.2-1.7     Modif install CyberChef pour installation auto de la dernière version
 # 2022 12 03    v2.2-1.8     Powershell add + UPX
+# 2022 12 05    v2.2-1.9     Coorectif cheminInstall
 
-versionIFT="v2.2-1.8 du 03 décembre 2022"
+versionIFT="v2.2-1.9 du 05 décembre 2022"
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
@@ -43,7 +44,7 @@ versionIFT="v2.2-1.8 du 03 décembre 2022"
     VERSION_INITRD=$(basename /boot/initrd.img-$(uname -r) | cut -d "-" -f2-4)
     ENVBUREAU="/etc/mate/"
     GESTCONNECTION="/etc/lightdm/"
-    cheminInstall="/home/$utilisateur/Documents/Linux-Post_Install/"
+    cheminInstall="/home/$utilisateur/Documents/IFT-install_forensics_tools/"
 
     ETHNAME=$(ip a | grep "2: en" | tr " " ":" | awk -F ":" '{print $3}')
     ETHCHEMIN="/etc/sysconfig/network-scripts/ifcfg-$ETHNAME" # pour le futur : RedHat
@@ -386,6 +387,9 @@ function volat2() {
         # Test
         vol2.py -h
         decompte 3
+    else
+        echo -e "${vert} [ OK ] Volatility 2 est déjà installé ${neutre}"
+        decompte 3    
     fi
 }
         
@@ -514,6 +518,9 @@ function reginst() {
         cp regripper/rip.pl.linux /usr/local/bin/rip.pl && echo -e "${vert}Succès /usr/local/src/regripper/rip.pl.linux copié dans /usr/local/bin/rip.pl${neutre}"
         /usr/local/bin/rip.pl  && echo -e "${vert}\nrip.pl a été mis dans : /usr/local/bin/rip.pl !\n\nLe fichier d'origine se trouve dans : /usr/local/src/regripper/rip.pl\n\n${neutre}"
         decompte 3
+    else
+        echo -e "${vert} [ OK ] Regripper est déjà installé ${neutre}"
+        decompte 3
     fi
 }
 
@@ -595,6 +602,9 @@ function mftdumpinst() {
         ln -s /opt/mft_dump /usr/local/bin/mft_dump
         mft_dump -h && echo -e "${vert} [ OK ] mft_dump installé ${neutre}"
         decompte 3
+    else
+        echo -e "${vert} [ OK ] MFT Dump est déjà installé ${neutre}"
+        decompte 3    
     fi
 }
 
@@ -631,6 +641,9 @@ function imagemounterE01() {
     apt update && apt install -y python3-pip python-setuptools xmount ewf-tools afflib-tools disktype qemu-utils avfs xfsprogs lvm2 vmfs-tools mtd-tools squashfs-tools mdadm cryptsetup libbde-utils libvshadow-utils 
     if [[ -f "/usr/local/bin/fls" ]] ; then
         apt install -y sleuthkit
+    else
+        echo -e "${vert} [ OK ] FLS de sleuthkit est déjà installé ${neutre}"
+        decompte 3    
     fi    
     
     # Installation
