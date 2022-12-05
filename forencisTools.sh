@@ -29,7 +29,7 @@
 # 2022 10 23    v2.2-1.6     Correction install.sh
 # 2022 11 20    v2.2-1.7     Modif install CyberChef pour installation auto de la dernière version
 # 2022 12 03    v2.2-1.8     Powershell add + UPX
-# 2022 12 05    v2.2-1.9     Coorectif cheminInstall
+# 2022 12 05    v2.2-1.9     Correctifs cheminInstall + fonctions
 
 versionIFT="v2.2-1.9 du 05 décembre 2022"
 
