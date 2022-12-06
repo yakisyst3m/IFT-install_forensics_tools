@@ -32,7 +32,7 @@
 # 2022 12 05    v2.2-1.9     Correctifs cheminInstall + fonctions
 # 2022 12 06    v2.2-1.10    Menu correction
 
-versionIFT="v2.2-1.9 du 05 décembre 2022"
+versionIFT="v2.2-1.10 du 06 décembre 2022"
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
