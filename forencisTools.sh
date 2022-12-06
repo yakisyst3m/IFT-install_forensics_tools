@@ -30,6 +30,7 @@
 # 2022 11 20    v2.2-1.7     Modif install CyberChef pour installation auto de la dernière version
 # 2022 12 03    v2.2-1.8     Powershell add + UPX
 # 2022 12 05    v2.2-1.9     Correctifs cheminInstall + fonctions
+# 2022 12 06    v2.2-1.10    Menu correction
 
 versionIFT="v2.2-1.9 du 05 décembre 2022"
 
@@ -1005,8 +1006,9 @@ echo " "
         upxinstall ;;   
    "200")
         mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; radare2inst ; volat2 ; volat3 ; convertinstall ; ramParserinstall ;\
-        reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; mountvmdkinstall ; sleuthkitInstall ; mftdumpinst ;\
-        loginstall ; forall ; forextra ; forextragui ; vbox ; wineinstall ; yarainstall ; powershellinstall ; upxinstall ;;
+        reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; mftdumpinst ; mountvmdkinstall ;\
+        loginstall ; forall ; forextra ; forextragui ; vbox ; wineinstall ; convertinstall ; cyberchefinstall ; yarainstall ;\
+        powershellinstall ; upxinstall ;;
     f|F) break ;;
     q|Q) exit ;;
     *) continue ;;
