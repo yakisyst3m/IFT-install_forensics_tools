@@ -31,8 +31,9 @@
 # 2022 12 03    v2.2-1.8     Powershell add + UPX
 # 2022 12 05    v2.2-1.9     Correctifs cheminInstall + fonctions
 # 2022 12 06    v2.2-1.10    Menu correction
+# 2022 12 06    v2.2-1.11    Yara moodif install
 
-versionIFT="v2.2-1.10 du 06 décembre 2022"
+versionIFT="v2.2-1.11 du 07 décembre 2022"
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
@@ -803,18 +804,46 @@ function yarainstall() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de YARA ---- ]${neutre}\n"
     dpkgyara=$(dpkg -l | awk -F " " '{print $2}' | grep -E "^yara$")
+    dpkgyaraDoc=$(dpkg -l | awk -F " " '{print $2}' | grep -E "^yara-doc$")
+    dpkgyaraLib=$(dpkg -l | awk -F " " '{print $2}' | grep -oE "^libyara-dev")
+    dpkgyaraLib4=$(dpkg -l | awk -F " " '{print $2}' | grep -oE "^libyara4")
+    dpkgyaraLib8=$( dpkg -l | awk -F " " '{print $2}' | grep -oE "^libyara8")
+    
     if [ "$dpkgyara" != "yara" ] ; then
         apt update && apt install -y libyara-dev libyara8 yara yara-doc
         yara -h && echo -e "${vert} [ OK ] yara pour la recherche de pattern est installé ${neutre}"
-        sleep 2
-        yarac -h && echo -e "${vert} [ OK ] yarac pour la compilation est installé ${neutre}"
-        sleep 2
-        versionYara=$(yara -v) && echo -e "${vert} [ OK ] Version de yara installée : yara $versionYara ${neutre}"
-        decompte 3
     else
         echo -e "${vert} [ OK ] yara est déjà installé : version yara $versionYara ${neutre}"
-        decompte 3
+        decompte 2
     fi
+    if [ "$dpkgyaraDoc" != "yara-doc" ] ; then
+        apt update && apt install -y yara-doc
+    else
+        echo -e "${vert} [ OK ] yara-doc est déjà installé${neutre}"
+        decompte 2    
+    fi
+    if [ "$dpkgyaraLib" != "libyara-dev" ] ; then
+        apt update && apt install -y libyara-dev
+    else
+        echo -e "${vert} [ OK ] libyara-dev est déjà installé${neutre}"
+        decompte 2    
+    fi
+    if [ "$dpkgyaraLib4" != "libyara4" ] ; then
+        apt update && apt install -y libyara4
+    else
+        echo -e "${vert} [ OK ] libyara4 est déjà installé${neutre}"
+        decompte 2    
+    fi
+    if [ "$dpkgyaraLib8" != "libyara8" ] ; then
+        apt update && apt install -y libyara8
+    else
+        echo -e "${vert} [ OK ] libyara8 est déjà installé${neutre}"
+        decompte 2    
+    fi
+
+    yarac -h && echo -e "${vert} [ OK ] yarac pour la compilation est installé ${neutre}"
+    versionYara=$(yara -v) && echo -e "${vert} [ OK ] Version de yara installée : yara $versionYara ${neutre}"
+    decompte 3
 }
 
 ########    SCRIPTING
