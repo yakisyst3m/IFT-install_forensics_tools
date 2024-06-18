@@ -32,7 +32,7 @@
 - forensics-extra-gui
 
 :radio_button: Machines virtuelles / emulateurs:
-- VirtualBox 6.1 + Extension Pack
+- VirtualBox 7 + Extension Pack
 - wine32 - wine64
 - wine64-tools
 
@@ -243,7 +243,7 @@ pffexport user@domaine.pst
 - pst-utils ` convertir une boîte mails .pst en boîte mails .eml `  
 *Exemple :*
 ```
-readpst -M -u -e -b toto.tutu@domaine.pst
+readpst -M -u -b -e toto.tutu@domaine.pst
 ```
 - libemail-outlook-message-perl `convertir un message .msg en .eml`
 ```
