@@ -18,7 +18,7 @@
   toto@debian:~$ sudo ./install.sh
   ```
 <p align="center">
-<img src="/img/iftv2.2-1.12.png" alt="IFT MENU" width="1400"/>
+<img src="/img/iftv2.2-1.12 .png" alt="IFT MENU" width="1400"/>
 </p>
   
 ## Quelques infos : Liste des Logiciels installés + exemples d'utilisation :
