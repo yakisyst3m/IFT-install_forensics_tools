@@ -15,7 +15,7 @@
 - Lancer le programme : [ Lancer en **root** ]
   ```
   toto@debian:~$ chmod +x *.sh
-  toto@debian:~$ sudo ./install.sh
+  toto@debian:~$ sudo ./forencisTools.sh
   ```
 <p align="center">
 <img src="/img/iftv2.2-1.12 .png" alt="IFT MENU" width="1400"/>
