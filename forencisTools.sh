@@ -32,14 +32,18 @@
 # 2022 12 05    v2.2-1.9     Correctifs cheminInstall + fonctions
 # 2022 12 06    v2.2-1.10    Menu correction
 # 2022 12 06    v2.2-1.11    Yara moodif install
+# 2024 06 18    v2.2-1.12    remplacement python3.9 par python3 / Ajout : adb fastboot docker dockerCompose
+# 2024 06 19    v2.2-1.13    ajout jq  + config thunderbird et download add-on import export tool NG
+# 2024 07 06    v2.3-0.0     Refonte type installateur, correctif VBOX + thunderbird
 
-versionIFT="v2.2-1.11 du 07 décembre 2022"
+versionIFT="v2.3-0.0 du 6 juillet 2024"
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
 # VARIABLES : CHEMINS / COULEURS
       
     utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
+    uidutilisateur=$(echo $UID)
     VERSION_OS=$(grep -E '^ID=' /etc/os-release | cut -d "=" -f2)
     VERSION_DISTRI_DEBIAN=$(grep "VERSION_CODENAME" /etc/os-release | awk -F "=" '{print $2}')
     VERSION_KERNEL=$(uname -r)
@@ -47,6 +51,7 @@ versionIFT="v2.2-1.11 du 07 décembre 2022"
     ENVBUREAU="/etc/mate/"
     GESTCONNECTION="/etc/lightdm/"
     cheminInstall="/home/$utilisateur/Documents/IFT-install_forensics_tools/"
+    cheminRelatifActuel=$(pwd)
 
     ETHNAME=$(ip a | grep "2: en" | tr " " ":" | awk -F ":" '{print $3}')
     ETHCHEMIN="/etc/sysconfig/network-scripts/ifcfg-$ETHNAME" # pour le futur : RedHat
@@ -63,6 +68,18 @@ versionIFT="v2.2-1.11 du 07 décembre 2022"
     souligne="\e[4m"
     neutrePolice='\e[0m'
 
+
+######## TEST COMPTE ROOT
+testRootCpt() {
+    # Vérifie si l'utilisateur actuel a l'UID 0 (root)
+    if [ "$(id -u)" -ne 0 ]; then
+        # Si l'utilisateur n'est pas root, afficher un message d'erreur et demander à utiliser 'sudo' ou root
+        echo -e "${rouge}Veuillez utiliser 'sudo' ou root !!${neutre}"
+        read -p "Appuyez sur une touche pour continuer"
+        exit 1
+    fi
+    # Si l'utilisateur est root, la fonction continue son exécution (aucune action nécessaire ici)
+}
 
 
 ######## DECOMPTE 
@@ -130,7 +147,7 @@ function mjour() {
 function installbase() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Installation des logiciels de base ---- ]${neutre}\n"
-    logicielsDeBase="vim htop bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3.9 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip wireshark dos2unix xattr"
+    logicielsDeBase="vim htop bmon gcc build-essential linux-headers-$(uname -r) make dkms nmap net-tools hping3 arping foremost libimage-exiftool-perl sonic-visualiser wxhexeditor hexedit gparted rsync tcpdump geany wget curl bash-completion tree numlockx minicom git whois nethogs testdisk tmux openssh-server openssl sqlite3 python3 python2.7 python3-pip python3-venv tshark openssl keepassx gufw rename parted p7zip wireshark dos2unix xattr git ssdeep jq"
     echo -e "${vert}$logicielsDeBase${neutre}\n"
     decompte 4
     apt update && apt install -y $logicielsDeBase && echo -e "${vert} [ OK ] Logiciels de Base installés ${neutre}"
@@ -140,7 +157,7 @@ function installbase() {
         echo -e "\n##############################################\n"
         echo -e "${bleu}[ Correction des erreurs au boot et à l'arrêt ]${neutre}"
         
-        # Correction "A job is runnin UID 1000 (34s / 2mi 3s)"
+        # Correction "A job is running UID 1000 (34s / 2mi 3s)"
         if [ "grep -q 'DefaultTimeoutStartSec=20s' /etc/systemd/system.conf" ] ; then
             echo -e "${vert} [ OK ] Correction des erreurs déjà effectué ${neutre}"
         else
@@ -344,6 +361,7 @@ function radare2inst() {
     ./install.sh && echo -e "${vert} [ OK ] radare2 a été installé ${neutre}"
     cd ..
     decompte 3
+    cd "$cheminRelatifActuel"
     else
         echo -e "${vert} [ OK ] radare2 est déjà installé ${neutre}"
     fi    
@@ -389,6 +407,7 @@ function volat2() {
         # Test
         vol2.py -h
         decompte 3
+        cd "$cheminRelatifActuel"
     else
         echo -e "${vert} [ OK ] Volatility 2 est déjà installé ${neutre}"
         decompte 3    
@@ -437,6 +456,7 @@ function volat3() {
         # TestMAJ
         vol3.py -h
         decompte 3
+        cd "$cheminRelatifActuel"
     else
         echo -e "${vert} [ OK ] Volatility 3 est déjà installé ${neutre}"
     fi
@@ -455,6 +475,7 @@ convertinstall() {
         ln -s /opt/csv2xlsx /usr/local/bin && echo -e "${vert} [ OK ] csv2xlsx a été installé ${neutre}"
         csv2xlsx --help
         decompte 3
+        cd "$cheminRelatifActuel"
     else
         echo -e "${vert} [ OK ] csv2xlsx est déjà installé ${neutre}"
         decompte 3
@@ -474,6 +495,7 @@ ramParserinstall() {
             chown $utilisateur: /opt/ramParserVolatility3.sh
             ln -s /opt/ramParserVolatility3.sh /usr/local/bin/ramParserVolatility3 && echo -e "${vert} [ OK ] ramParserVolatility3 s'est correctement installé ${neutre}"
             decompte 3
+            cd "$cheminRelatifActuel"
         else 
             echo -e "${vert} [ OK ] ramParserVolatility3 est déjà installé ${neutre}"
             decompte 3
@@ -520,6 +542,7 @@ function reginst() {
         cp regripper/rip.pl.linux /usr/local/bin/rip.pl && echo -e "${vert}Succès /usr/local/src/regripper/rip.pl.linux copié dans /usr/local/bin/rip.pl${neutre}"
         /usr/local/bin/rip.pl  && echo -e "${vert}\nrip.pl a été mis dans : /usr/local/bin/rip.pl !\n\nLe fichier d'origine se trouve dans : /usr/local/src/regripper/rip.pl\n\n${neutre}"
         decompte 3
+        cd "$cheminRelatifActuel"
     else
         echo -e "${vert} [ OK ] Regripper est déjà installé ${neutre}"
         decompte 3
@@ -528,12 +551,104 @@ function reginst() {
 
 ########    LES OUTILS DE BUREAUTIQUE
 
+#### CONFIG THUNDERBIRD + DOWNLOAD import export Tool NG
+# Fonction pour récupérer l'URL de téléchargement du dernier release depuis l'API GitHub
+get_latest_release_url() {
+    release_xpi_url=$(curl -s https://api.github.com/repos/thunderbird/import-export-tools-ng/releases/latest | grep browser_download_url | sed 's/"//g' | awk '{print $2}')
+    
+    if [ -z "$release_xpi_url" ]; then
+        echo "Erreur : Impossible de trouver l'URL de téléchargement dans les données JSON."
+        exit 1
+    fi
+
+    echo "$release_xpi_url"
+}
+
+# Fonction pour configurer Thunderbird et créer un profil nommé "Analyste" s'il n'existe pas
+configure_thunderbird() {
+    profile_name="Analyste"
+    profile_path="/home/$utilisateur/.thunderbird"
+    
+    if [ ! -d "$profile_path" ]; then
+        mkdir -p "$profile_path"
+        chmod -R 700 "$profile_path"
+        chown -R "$utilisateur": "$profile_path"
+    else
+        chmod -R 700 "$profile_path"
+        chown -R "$utilisateur": "$profile_path"    
+    fi
+
+    profile_ini="$profile_path/profiles.ini"
+    profile_dir="$profile_path/$(xvfb-run thunderbird -CreateProfile "$profile_name" | grep Path | awk '{print $2}')"
+
+    if [ ! -d "$profile_dir" ]; then
+        echo "Création du profil Thunderbird '$profile_name'..."
+        xvfb-run thunderbird -CreateProfile "$profile_name $profile_dir"
+        
+        if [ $? -ne 0 ]; then
+            echo "Erreur : Impossible de créer le profil Thunderbird."
+            exit 1
+        fi
+    else
+        echo "Le profil Thunderbird '$profile_name' existe déjà."
+    fi
+
+    # Configuration initiale pour éviter l'ouverture de l'onglet "Account Setup"
+    prefs_js="$profile_dir/prefs.js"
+    {
+        echo 'user_pref("mail.account.account1.server", "server1");'
+        echo 'user_pref("mail.accountmanager.accounts", "account1");'
+        echo 'user_pref("mail.accountmanager.defaultaccount", "account1");'
+        echo 'user_pref("mail.accountmanager.localfoldersserver", "server1");'
+        echo 'user_pref("mail.identity.id1.fullName", "Analyste");'
+        echo 'user_pref("mail.identity.id1.useremail", "analyste@localhost");'
+        echo 'user_pref("mail.identity.id1.composeHtml", false);'
+        echo 'user_pref("mail.server.server1.directory-rel", "[ProfD]Mail/Local Folders");'
+        echo 'user_pref("mail.server.server1.hostname", "Local Folders");'
+        echo 'user_pref("mail.server.server1.name", "Local Folders");'
+        echo 'user_pref("mail.server.server1.type", "none");'
+        echo 'user_pref("mail.server.server1.userName", "nobody");'
+        echo 'user_pref("mail.smtp.defaultserver", "smtp1");'
+        echo 'user_pref("mail.smtpserver.smtp1.hostname", "localhost");'
+        echo 'user_pref("mail.smtpserver.smtp1.username", "nobody");'
+        echo 'user_pref("mail.smtpserver.smtp1.description", "Default");'
+        echo 'user_pref("mail.smtpservers", "smtp1");'
+        echo 'user_pref("mail.startup.enabledMailCheckOnce", true);'
+        echo 'user_pref("mail.ui-rdf.version", 17);'
+        echo 'user_pref("mailnews.start_page_override.mstone", "ignore");'
+    } >> "$prefs_js"
+}
+
+# Fonction pour télécharger l'add-on dans le dossier de téléchargements
+download_addon() {
+    release_xpi_url=$(get_latest_release_url)
+    download_dir="/home/$utilisateur/Téléchargements"
+    tmp_file="$download_dir/$(basename "$release_xpi_url")"
+
+    echo "Téléchargement de l'add-on Thunderbird ImportExportTools NG depuis GitHub..."
+    wget -q --show-progress "$release_xpi_url" -O "$tmp_file"
+
+    if [ $? -ne 0 ]; then
+        echo "Erreur : Téléchargement de l'add-on a échoué. Vérifiez l'URL ou votre connexion internet."
+        rm "$tmp_file"
+        exit 1
+    fi
+
+    echo "L'add-on Thunderbird ImportExportTools NG a été téléchargé avec succès dans $download_dir."
+}
+
 function burinst() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation des outils de bureautique ---- ]${neutre}\n"
-    apt update && apt install -y libemail-outlook-message-perl pst-utils thunderbird  && echo -e "${vert} [ OK ] Outils Bureautique installés ${neutre}"
+    apt update && apt install -y libemail-outlook-message-perl pst-utils thunderbird xvfb && echo -e "${vert} [ OK ] Outils Bureautique installés ${neutre}"
+
+    # Appel des fonctions thunderbird
+    configure_thunderbird
+    download_addon
+
     decompte 3
 }
+
 
 ########    LES OUTILS DE DISQUES
 
@@ -548,48 +663,92 @@ function diskinst() {
 
 function mftinst() {
     echo -e "\n##############################################\n"
-    # olevba3 # analyzeMFT.py
+    
+    # oletools et analyzeMFT
     echo -e "\n${bleu}[ ---- Début d'installation de oletools analyzeMFT ---- ]${neutre}\n"
-    pip install oletools analyzeMFT && echo -e "${vert} [ OK ] oletools analyzeMFT installés ${neutre}"
+    if ! pip show oletools &>/dev/null || ! pip show analyzeMFT &>/dev/null; then
+        pip install oletools analyzeMFT && echo -e "${vert} [ OK ] oletools analyzeMFT installés ${neutre}"
+    else
+        echo -e "${vert} [ OK ] oletools analyzeMFT déjà installés ${neutre}"
+    fi
     decompte 1
-    # getfattr # ewfacquire ...
+
+    # pff-tools, ewf-tools, libewf-dev, libewf2, attr
     echo -e "\n${bleu}[ ---- Début d'installation de pff-tools ewf-tools libewf-dev libewf2 attr ---- ]${neutre}\n"
-    apt update && apt install -y pff-tools ewf-tools libewf-dev libewf2 attr && echo -e "${vert} [ OK ] pff-tools ewf-tools libewf-dev libewf2 attr installés ${neutre}"
+    if ! dpkg -l | grep -qE "pff-tools|ewf-tools|libewf-dev|libewf2|attr"; then
+        apt update && apt install -y pff-tools ewf-tools libewf-dev libewf2 attr && echo -e "${vert} [ OK ] pff-tools ewf-tools libewf-dev libewf2 attr installés ${neutre}"
+    else
+        echo -e "${vert} [ OK ] pff-tools ewf-tools libewf-dev libewf2 attr déjà installés ${neutre}"
+    fi
     decompte 1
-    # Suite plaso : # log2timeline.py # psort.py # psteal.py
+
+    # Suite plaso
     echo -e "\n${bleu}[ ---- Début d'installation de la suite plaso ---- ]${neutre}\n"
-    apt install -y plaso && echo -e "${vert} [ OK ] Suite plaso installés ${neutre}"
+    if ! dpkg -l | grep -q plaso; then
+        apt install -y plaso && echo -e "${vert} [ OK ] Suite plaso installée ${neutre}"
+    else
+        echo -e "${vert} [ OK ] Suite plaso déjà installée ${neutre}"
+    fi
     decompte 1
-    # prefetch.py
+
+    # windowsprefetch
     echo -e "\n${bleu}[ ---- Début d'installation de windowsprefetch ---- ]${neutre}\n"
-    pip3 install windowsprefetch && echo -e "${vert} [ OK ] windowsprefetch installés ${neutre}"
+    if ! pip3 show windowsprefetch &>/dev/null; then
+        pip3 install windowsprefetch && echo -e "${vert} [ OK ] windowsprefetch installés ${neutre}"
+    else
+        echo -e "${vert} [ OK ] windowsprefetch déjà installés ${neutre}"
+    fi
     decompte 1
-    # ShimCacheParser.py 
+
+    # ShimCacheParser.py
     echo -e "\n${bleu}[ ---- Début d'installation de ShimCacheParser.py ---- ]${neutre}\n"
-    cd "$cheminInstall"
-    apt install -y python2*
-    unzip ./res/ShimCacheParser-master.zip 
-    mv ShimCacheParser-master /home/"$utilisateur"/.shimcacheparser/
-    chmod -R 750 /home/"$utilisateur"/.shimcacheparser/ && echo -e "${vert} [ OK ] ShimCacheParser copié dans : /home/$utilisateur/.shimcacheparser/  ${neutre}"
-    chown -R "$utilisateur": /home/"$utilisateur"/.shimcacheparser/
-    ln -s /home/"$utilisateur"/.shimcacheparser/ShimCacheParser.py /usr/local/bin/ShimCacheParser.py
-    decompte 3
+    if [ ! -d "/home/$utilisateur/.shimcacheparser/" ]; then
+        cd "$cheminInstall"
+        apt install -y python2*
+        unzip ./res/ShimCacheParser-master.zip 
+        mv ShimCacheParser-master /home/"$utilisateur"/.shimcacheparser/
+        chmod -R 750 /home/"$utilisateur"/.shimcacheparser/ && echo -e "${vert} [ OK ] ShimCacheParser copié dans : /home/$utilisateur/.shimcacheparser/  ${neutre}"
+        chown -R "$utilisateur": /home/"$utilisateur"/.shimcacheparser/
+        ln -s /home/"$utilisateur"/.shimcacheparser/ShimCacheParser.py /usr/local/bin/ShimCacheParser.py
+        decompte 3
+        cd "$cheminRelatifActuel"
+    else
+        echo -e "${vert} [ OK ] ShimCacheParser déjà installé ${neutre}"
+    fi
 }
+
 
 ########    INSTALLER LA SUITE SLEUTHKIT
-
+    # fls / mmls / icat / mactime  
 function sleuthkitInstall() {
-    # fls / mmls / icat / mactime / 
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de la suite sleuthkit ---- ]${neutre}\n"
-    cd "$cheminInstall"
-    unzip res/sleuthkit-debian-master.zip 
-    cd sleuthkit-debian-master/
-    ./configure 
-    make
-    make install && echo -e "${vert} [ OK ] Suite Sleuthkit installée ${neutre}"
-    decompte 3
+
+    tools=("fls" "mmls" "icat" "mactime")
+    missing_tools=()
+
+    for tool in "${tools[@]}"; do
+        if ! command -v "$tool" ; then
+            missing_tools+=("$tool")
+        fi
+    done
+
+    if [ ${#missing_tools[@]} -eq 0 ]; then
+        echo -e "${vert} [ OK ] Suite Sleuthkit déjà installée ${neutre}"
+        decompte 3
+    else
+        echo -e "${bleu}Installation de la suite Sleuthkit en cours...${neutre}"
+        cd res/ || { echo "Erreur: Impossible de changer de répertoire vers $cheminInstall"; exit 1; }
+        unzip sleuthkit-debian-master.zip || { echo "Erreur: Impossible de décompresser sleuthkit-debian-master.zip"; exit 1; }
+        cd sleuthkit-debian-master/ || { echo "Erreur: Impossible de changer de répertoire vers sleuthkit-debian-master"; exit 1; }
+        ./configure || { echo "Erreur: Échec de la configuration"; exit 1; }
+        make || { echo "Erreur: Échec de la compilation"; exit 1; }
+        make install && echo -e "${vert} [ OK ] Suite Sleuthkit installée ${neutre}" || { echo "Erreur: Échec de l'installation"; exit 1; }
+        decompte 3
+        cd "$cheminRelatifActuel" || { echo "Erreur: Impossible de changer de répertoire vers $cheminRelatifActuel"; exit 1; }
+    fi
 }
+
 
 ########    INSTALLER MFT DUMP      https://github.com/omerbenamram/mft
 
@@ -597,13 +756,13 @@ function mftdumpinst() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de mft_dump ---- ]${neutre}\n"
     if [[ ! -f "/usr/local/bin/mft_dump" ]] ; then
-        cd "$cheminInstall"
         wget --progress=bar https://github.com/omerbenamram/mft/releases/download/v0.6.0/mft_dump-v0.6.0-x86_64-unknown-linux-gnu -O $cheminInstall/res/mft_dump
         cp res/mft_dump /opt
         chmod +x /opt/mft_dump
         ln -s /opt/mft_dump /usr/local/bin/mft_dump
         mft_dump -h && echo -e "${vert} [ OK ] mft_dump installé ${neutre}"
         decompte 3
+        cd "$cheminRelatifActuel"
     else
         echo -e "${vert} [ OK ] MFT Dump est déjà installé ${neutre}"
         decompte 3    
@@ -613,23 +772,56 @@ function mftdumpinst() {
 ########    INSTALLER LES OUTILS DE LOGS
 
 function loginstall() {
-    # auditd 
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation des outils de log ---- ]${neutre}\n"
-    cd "$cheminInstall"
-    mjour
-    apt install -y auditd 
-    
-    # evtx2log by Yakisyst3m
-    apt install -y rename libevtx-utils # dépendances
-    git clone https://github.com/yakisyst3m/evtx2log.git
-    mv evtx2log/ res/
-    cp res/evtx2log/evtx2log.sh /opt/
-    chmod 755 /opt/evtx2log.sh
-    ln -s /opt/evtx2log.sh /usr/local/bin/
-    evtx2log.sh
+
+    # Vérifier et installer auditd
+    if ! command -v auditd &>/dev/null; then
+        mjour
+        apt install -y auditd
+        if [[ $? -ne 0 ]]; then
+            echo "Erreur: Échec de l'installation de auditd."
+            exit 1
+        fi
+    else
+        echo -e "${vert} [ OK ] auditd est déjà installé ${neutre}"
+    fi
+
+    # Vérifier et installer evtx2log
+    if ! command -v evtx2log.sh &>/dev/null; then
+        apt install -y rename libevtx-utils
+        if [[ $? -ne 0 ]]; then
+            echo "Erreur: Échec de l'installation des dépendances pour evtx2log."
+            exit 1
+        fi
+
+        # Cloner evtx2log depuis GitHub
+        git clone https://github.com/yakisyst3m/evtx2log.git
+        mv evtx2log/ res/
+        cp res/evtx2log/evtx2log.sh /opt/
+        chmod 755 /opt/evtx2log.sh
+        ln -s /opt/evtx2log.sh /usr/local/bin/
+        if [[ $? -ne 0 ]]; then
+            echo "Erreur: Échec de la configuration de evtx2log."
+            exit 1
+        fi
+
+        # Tester l'exécution de evtx2log.sh
+        evtx2log.sh
+        if [[ $? -ne 0 ]]; then
+            echo "Erreur: Échec de l'exécution de evtx2log.sh."
+            exit 1
+        fi
+
+        echo -e "${vert} [ OK ] evtx2log installé ${neutre}"
+    else
+        echo -e "${vert} [ OK ] evtx2log est déjà installé ${neutre}"
+    fi
+
     decompte 3
+    cd "$cheminRelatifActuel"
 }
+
 
 
 ########    INSTALLER L'APPLICATION PYTHON IMAGEMOUNTER - MOTAGE AUTO E01
@@ -637,25 +829,42 @@ function loginstall() {
 function imagemounterE01() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de l'application Python ImageMounter pour Image E01 Encase ---- ]${neutre}\n"
-    cd "$cheminInstall"
-    
-    # Dépendences
-    apt update && apt install -y python3-pip python-setuptools xmount ewf-tools afflib-tools disktype qemu-utils avfs xfsprogs lvm2 vmfs-tools mtd-tools squashfs-tools mdadm cryptsetup libbde-utils libvshadow-utils 
-    if [[ -f "/usr/local/bin/fls" ]] ; then
+
+    # Vérification et installation des dépendances obligatoires
+    echo -e "\n${bleu}[ ---- Installation des dépendances obligatoires ---- ]${neutre}\n"
+    apt update
+    apt install -y python3-pip python-setuptools xmount ewf-tools afflib-tools disktype qemu-utils avfs xfsprogs lvm2 vmfs-tools mtd-tools squashfs-tools mdadm cryptsetup libbde-utils libvshadow-utils
+
+    # Vérifier si FLS (de sleuthkit) est déjà installé
+    if ! command -v fls &>/dev/null; then
+        echo -e "\n${bleu}[ ---- Installation de FLS de sleuthkit ---- ]${neutre}\n"
         apt install -y sleuthkit
+        if [[ $? -ne 0 ]]; then
+            echo "Erreur: Échec de l'installation de sleuthkit."
+            exit 1
+        fi
     else
         echo -e "${vert} [ OK ] FLS de sleuthkit est déjà installé ${neutre}"
-        decompte 3    
-    fi    
-    
-    # Installation
-    pip3 install pytsk3 python-magic imagemounter && echo -e "${vert} [ OK ] ImageMounter installé - Pour lancer : imount image.E01 ${neutre}"
-    
-    # Vérification des dépendence obligatoires et facultatives
+    fi
+
+    # Installation d'ImageMounter
+    echo -e "\n${bleu}[ ---- Installation de ImageMounter ---- ]${neutre}\n"
+    pip3 install pytsk3 python-magic imagemounter
+    if [[ $? -ne 0 ]]; then
+        echo "Erreur: Échec de l'installation de ImageMounter."
+        exit 1
+    fi
+
+    # Vérification des dépendances
+    echo -e "\n${bleu}[ ---- Vérification des dépendances ---- ]${neutre}\n"
     imount --check
-    echo -e "\n\t${rouge}Vérifier que les dépendences obligatoires sont installées + Appuyer sur une touche pour continuer ...${neutre}"
-    read
+    echo -e "\n\t${rouge}Vérifier que les dépendances obligatoires sont installées + Appuyer sur une touche pour continuer ...${neutre}"
+    echo -e "\n\t${bleu}Pour info : XFS, JFFS et SQUASHFS sont quand même installés mais n'apparaissent pas dans les commandes mount ...${neutre}"
+
+    decompte 3
+    cd "$cheminRelatifActuel"
 }
+
 
 ########    INSTALLER L'APPLICATION GUESTMOUNT - MONTAGE VMDK VDI
 
@@ -676,81 +885,148 @@ function mountvmdkinstall() {
 function forall() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de FORENSICS-ALL ---- ]${neutre}\n"
-    apt update && apt install -y forensics-all && echo -e "${vert} [ OK ] forensics-all installé ${neutre}"
+    
+    # Vérifier si forensics-all est déjà installé
+    if ! dpkg -s forensics-all &>/dev/null; then
+        echo -e "\n${bleu}[ ---- Installation de forensics-all ---- ]${neutre}\n"
+        apt update
+        apt install -y forensics-all
+        if [[ $? -ne 0 ]]; then
+            echo "Erreur: Échec de l'installation de forensics-all."
+            exit 1
+        fi
+    else
+        echo -e "${vert} [ OK ] forensics-all est déjà installé ${neutre}"
+    fi
+
     decompte 3
 }
+
 
 ########    FORENSICS-EXTRA
 
 function forextra() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de FORENSICS-EXTRA ---- ]${neutre}\n"
-    apt update && apt install -y forensics-extra && echo -e "${vert} [ OK ] forensics-extra installé ${neutre}"
+    
+    # Vérifier si forensics-extra est déjà installé
+    if ! dpkg -s forensics-extra &>/dev/null; then
+        echo -e "\n${bleu}[ ---- Installation de forensics-extra ---- ]${neutre}\n"
+        apt update
+        apt install -y forensics-extra
+        if [[ $? -ne 0 ]]; then
+            echo "Erreur: Échec de l'installation de forensics-extra."
+            exit 1
+        fi
+    else
+        echo -e "${vert} [ OK ] forensics-extra est déjà installé ${neutre}"
+    fi
+
     decompte 3
 }
+
 
 ########    FORENSICS-EXTRA-GUI
 
 function forextragui() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de FORENSICS-EXTRA-GUI ---- ]${neutre}\n"
-    apt update && apt install -y forensics-extra-gui && echo -e "${vert} [ OK ] forensics-extra-gui installé ${neutre}"
+    
+    # Vérifier si forensics-extra-gui est déjà installé
+    if ! dpkg -s forensics-extra-gui &>/dev/null; then
+        echo -e "\n${bleu}[ ---- Installation de forensics-extra-gui ---- ]${neutre}\n"
+        apt update
+        apt install -y forensics-extra-gui
+        if [[ $? -ne 0 ]]; then
+            echo "Erreur: Échec de l'installation de forensics-extra-gui."
+            exit 1
+        fi
+    else
+        echo -e "${vert} [ OK ] forensics-extra-gui est déjà installé ${neutre}"
+    fi
+
     decompte 3
 }
+
 
 ########    INSTALLATION DE VIRTUALBOX 7.0
 
 function vbox() {
     echo -e "\n##############################################\n"
+
     # Vérification que l'on est sur une machine physique
-    vboxVersion=$(dpkg -l | grep -i virtualbox | awk -F " " '{print $3}' | grep -oE '([0-9]{1}\.){2}[0-9]{1,3}' | sort | tail -1)
     os=$(dmidecode | grep -Ei '(version.*virt)' | awk -F " " '{print $2}')
-    
-    if [ "$os" != "VirtualBox" ] ; then
-        # Modification de la source.list et mise à jour
-        echo -e "${jaune}[ Modification des source.list ]${neutre}"
-        if [ "$VERSION_OS" = 'ubuntu' ] ; then
-            #add-apt-repository "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib"
-            add-apt-repository "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian jammy contrib"
+
+    if [ "$os" != "VirtualBox" ]; then
+        # Vérification de la version installée de VirtualBox 7
+        vbox7Installed=$(dpkg -l | grep -i virtualbox-7. | wc -l)
+
+        if [ "$vbox7Installed" -gt 0 ]; then
+            echo -e "${vert} [ OK ] VirtualBox 7 est déjà installé ${neutre}"
+            decompte 3
+            return
         fi
-        if [ "$VERSION_OS" = 'debian' ] ; then
-            #echo "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" >> /etc/apt/sources.list
+
+        # Vérification de la version installée de VirtualBox 6
+        vbox6Installed=$(dpkg -l | grep -i virtualbox-6. | wc -l)
+
+        if [ "$vbox6Installed" -gt 0 ]; then
+            echo -e "${jaune}[ Désinstallation de VirtualBox 6 ]${neutre}"
+            apt remove --purge -y virtualbox-6.*
+            apt autoremove -y
+        fi
+
+        # Modification de la source.list et mise à jour
+        echo -e "${jaune}[ Modification des sources.list ]${neutre}"
+        if [ "$VERSION_OS" = 'ubuntu' ]; then
+            add-apt-repository "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian jammy contrib"
+        elif [ "$VERSION_OS" = 'debian' ]; then
             echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian $VERSION_DISTRI_DEBIAN contrib" >> /etc/apt/sources.list
         fi
-        
-        # Téléchargement des clés
+
+        # Téléchargement des clés publiques
         echo -e "\n${bleu}[ ---- Début d'installation et de configuration Virtualbox ---- ]${neutre}\n"
-        echo -e "${jaune}[ Téléchargement et ajout des clés publiques de virtualbox ]${neutre}"
-        #wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
-        #wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-        wget -O- https://www.virtualbox.org/download/oracle_vbox_2016.asc | sudo gpg --dearmor --yes --output /usr/share/keyrings/oracle-virtualbox-2016.gpg
-        
+        echo -e "${jaune}[ Téléchargement et ajout des clés publiques de VirtualBox ]${neutre}"
+        wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo gpg --dearmor --yes --output /usr/share/keyrings/oracle-virtualbox-2016.gpg
+
+        # Mise à jour des paquets après modification des sources.list
         mjour
 
-        # Installation de virtualbox
-        echo -e "${jaune}[ Installation de virtualbox ]${neutre}"
-        apt install -y virtualbox-7.0 && echo -e "${vert} [ OK ] Virtualbox $vboxVersion installé ${neutre}"
+        # Installation de VirtualBox 7
+        echo -e "${jaune}[ Installation de VirtualBox 7 ]${neutre}"
+        apt install -y virtualbox-7.0 && echo -e "${vert} [ OK ] VirtualBox 7 installé ${neutre}"
+        
+        # Détection de la version installée de VirtualBox 7
+        vboxVersion=$(dpkg -l | grep -i virtualbox-7 | awk -F " " '{print $3}' | grep -oE '([0-9]{1}\.){2}[0-9]{1,3}' | sort | tail -1)
+
+        # Désinstallation de l'extension Pack existant
+        echo -e "${jaune}[ Désinstallation de l'ancien Extension Pack ]${neutre}"
+        VBoxManage extpack uninstall "Oracle VM VirtualBox Extension Pack"
 
         # Téléchargement de l'Extension Pack
         echo -e "${jaune}[ Installation de l'extension Pack ]${neutre}"
         wget https://download.virtualbox.org/virtualbox/"$vboxVersion"/Oracle_VM_VirtualBox_Extension_Pack-"$vboxVersion".vbox-extpack
-        
-        # Installation de l'Extension Pack + acceptation licence
-        echo ${ACCEPT_ORACLE_EXTPACK_LICENSE:='y'} | VBoxManage extpack install "Oracle_VM_VirtualBox_Extension_Pack-$vboxVersion.vbox-extpack" && echo -e "${vert} [ OK ] Extension Pack de Virtualbox $vboxVersion installée ${neutre}"
 
-        # Configuration pour pouvoir utiliser l'USB
-        echo -e "${jaune}[ Configuration de Virtualbox pour utiliser les clés USB ]${neutre}"
-        usermod -aG vboxusers "$utilisateur" && echo -e "${vert} [ OK ] Utilisation de l'USB configuré ${neutre}"
+        # Installation de l'Extension Pack avec acceptation de la licence automatique
+        echo ${ACCEPT_ORACLE_EXTPACK_LICENSE:='y'} | VBoxManage extpack install "Oracle_VM_VirtualBox_Extension_Pack-$vboxVersion.vbox-extpack" && echo -e "${vert} [ OK ] Extension Pack de VirtualBox $vboxVersion installée ${neutre}"
 
-        # Configuration pour le démarrage sur clé USB
-        usermod -aG disk "$utilisateur" && echo -e "${vert} [ OK ] Configuration pour démarrage sur clé USB configuré ${neutre}"
-        echo -e "${vert}[ ---- Fin d'installation et de configuration Virtualbox ---- ]${neutre}"
+        # Configuration pour permettre l'utilisation des clés USB
+        echo -e "${jaune}[ Configuration de VirtualBox pour utiliser les clés USB ]${neutre}"
+        usermod -aG vboxusers "$utilisateur" && echo -e "${vert} [ OK ] Utilisation de l'USB configurée ${neutre}"
+
+        # Configuration pour permettre le démarrage sur clé USB
+        usermod -aG disk "$utilisateur" && echo -e "${vert} [ OK ] Configuration pour démarrage sur clé USB configurée ${neutre}"
+
+        echo -e "${vert}[ ---- Fin d'installation et de configuration VirtualBox ---- ]${neutre}"
         decompte 3
     else
         echo -e "${rouge}Vous êtes sur une machine virtuelle, pas d'installation${neutre}"
         decompte 3
     fi
 }
+
+
+
 
 ########    WINE 32 + 64
 
@@ -775,7 +1051,7 @@ function cyberchefinstall() {
     echo -e "\n##############################################\n"
     echo -e "\n${bleu}[ ---- Début d'installation de CyberChef ---- ]${neutre}\n"
     if [ ! -d "/opt/cyberchef/" ] ; then
-        cd "$cheminInstall"/res
+        cd res/
         LOCATION=$(curl -s  https://api.github.com/repos/gchq/CyberChef/releases/latest | grep "browser_download_url" | awk '{ print $2 }' | sed 's/,$//' | sed 's/"//g') ; wget "$LOCATION"
         unzip CyberChef*.zip -d cyberchef
         cp -r cyberchef/ /opt/
@@ -784,6 +1060,7 @@ function cyberchefinstall() {
         ln -s /opt/cyberchef/CyberChef*.html /home/"$utilisateur"/Bureau/
         mv /home/"$utilisateur"/Bureau/CyberChef*.html /home/"$utilisateur"/Bureau/CyberChef && echo -e "${vert} [ OK ] CyberChef a été installé ${neutre}"
         decompte 3
+        cd "$cheminRelatifActuel"
     elif [ -d "/opt/cyberchef/" ] ; then
         echo -e "${vert} [ OK ] CyberChef est déjà installé, suppression de l'ancienne version avant réinstallation ${neutre}"
         rm -rf /opt/cyberchef
@@ -793,8 +1070,9 @@ function cyberchefinstall() {
         chmod -R 750 /opt/cyberchef
         chown -R $utilisateur: /opt/cyberchef
         ln -s /opt/cyberchef/CyberChef*.html /home/"$utilisateur"/Bureau/
-        mv /home/"$utilisateur"/Bureau/CyberChef*.html /home/"$utilisateur"/Bureau/CyberChef && echo -e "${vert} [ OK ] CyberChef a été installé ${neutre}"        
+        mv /home/"$utilisateur"/Bureau/CyberChef*.html /home/"$utilisateur"/Bureau/CyberChef && echo -e "${vert} [ OK ] CyberChef a été mis à jour avec la dernière version ${neutre}"        
         decompte 3
+        cd "$cheminRelatifActuel"
     fi
 }
 
@@ -807,7 +1085,7 @@ function yarainstall() {
     dpkgyaraDoc=$(dpkg -l | awk -F " " '{print $2}' | grep -E "^yara-doc$")
     dpkgyaraLib=$(dpkg -l | awk -F " " '{print $2}' | grep -oE "^libyara-dev")
     dpkgyaraLib4=$(dpkg -l | awk -F " " '{print $2}' | grep -oE "^libyara4")
-    dpkgyaraLib8=$( dpkg -l | awk -F " " '{print $2}' | grep -oE "^libyara8")
+    dpkgyaraLib9=$( dpkg -l | awk -F " " '{print $2}' | grep -oE "^libyara9")
     
     if [ "$dpkgyara" != "yara" ] ; then
         apt update && apt install -y libyara-dev libyara8 yara yara-doc
@@ -834,8 +1112,8 @@ function yarainstall() {
         echo -e "${vert} [ OK ] libyara4 est déjà installé${neutre}"
         decompte 2    
     fi
-    if [ "$dpkgyaraLib8" != "libyara8" ] ; then
-        apt update && apt install -y libyara8
+    if [ "$dpkgyaraLib9" != "libyara9" ] ; then
+        apt update && apt install -y libyara9
     else
         echo -e "${vert} [ OK ] libyara8 est déjà installé${neutre}"
         decompte 2    
@@ -848,11 +1126,11 @@ function yarainstall() {
 
 ########    SCRIPTING
 
-powershellinstall() {
+function powershellinstall() {
       echo -e "\n##############################################\n"
       echo -e "\n${bleu}[ ---- Début d'installation de powershell ---- ]${neutre}\n"
       if [ ! -f "/usr/bin/pwsh" ] ; then
-            apt update  && apt install -y curl gnupg apt-transport-http
+            apt update  && apt install -y curl gnupg apt-transport-https
             curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
             sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-debian-bullseye-prod bullseye main" > /etc/apt/sources.list.d/microsoft.list'
             apt update && apt install -y powershell && echo -e "${vert} [ OK ] Powershell a été installé${neutre}"
@@ -863,7 +1141,7 @@ powershellinstall() {
       fi
 }
 
-upxinstall() {
+function upxinstall() {
       echo -e "\n##############################################\n"
       echo -e "\n${bleu}[ ---- Début d'installation du Packer/Depacker UPX ---- ]${neutre}\n"
       if [ ! -f "/usr/bin/upx" ] ; then
@@ -874,6 +1152,88 @@ upxinstall() {
             decompte 3      
       fi
 }
+
+
+########    INSTALLER les outils ANDROID
+
+function androidForensics() {
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de adb + fastboot ---- ]${neutre}\n"
+        if [ ! -f "/usr/bin/adb" ] ; then
+            apt-get update && sudo apt install adb -y && echo -e "${vert} [ OK ] adb  a été installé ${neutre}"
+            decompte 3 
+        else
+            echo -e "${vert} [ OK ] adb est déjà installé${neutre}"
+            decompte 3            
+        fi
+        
+        if [ ! -f "/usr/bin/fastboot" ] ; then
+            apt-get update && sudo apt install fastboot -y && echo -e "${vert} [ OK ] fastboot a été installé ${neutre}"
+            decompte 3 
+        else
+            echo -e "${vert} [ OK ] fastboot est déjà installé${neutre}"
+            decompte 3            
+        fi
+
+}
+
+########    INSTALLER les outils DOCKER
+
+function dockerTools() {
+    echo -e "\n##############################################\n"
+    echo -e "\n${bleu}[ ---- Début d'installation de Docker + Docker Compose ---- ]${neutre}\n"
+
+    # Vérification de Docker
+    if which docker &>/dev/null && which docker-compose &>/dev/null; then
+        echo -e "${vert} [ OK ] Docker et Docker Compose sont déjà installés ${neutre}"
+        decompte 3
+        return
+    fi
+
+    # DEBIAN
+    if [ "$VERSION_OS" = 'debian' ] ; then
+        echo -e "\n${bleu}[ ---- Début d'installation de DOCKER ---- ]${neutre}\n"
+        apt remove docker docker-engine docker.io containerd runc       # Désinstalle les anciennes dépendances
+        apt update && apt install -y ca-certificates curl gnupg lsb-release p7zip-full unzip              # Ajout des dépendances à Docker
+        curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg  # Installation des clés
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        apt update && apt install -y docker-ce docker-ce-cli containerd.io            # Installation de Docker
+
+        sleep 2
+        decompte 3
+                      
+    # UBUNTU 
+    elif [ "$VERSION_OS" = 'ubuntu' ] ; then
+        apt remove docker docker-engine docker.io containerd runc       # Désinstalle les anciennes dépendances
+        apt install -y ca-certificates curl gnupg lsb-release p7zip-full unzip               # Ajout des dépendances à Docker
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg  # Installation des clés
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        apt update && apt install -y docker-ce docker-ce-cli containerd.io
+
+        sleep 2
+        decompte 3
+
+    else
+        echo -e "${rouge}Le système d'exploitation n'est ni une distribution Debian, ni une distribution Ubuntu : [ Fin de l'installation ]${neutre}"
+        exit 1
+    fi
+
+    # Installation de Docker Compose
+    echo -e "\n${bleu}[ ---- Début d'installation de DOCKER COMPOSE---- ]${neutre}\n"
+    curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
+    ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+    # Vérification après installation
+    if which docker &>/dev/null && which docker-compose &>/dev/null; then
+        echo -e "${vert} [ OK ] Docker et Docker Compose installés avec succès ${neutre}"
+    else
+        echo -e "${rouge} [ ERREUR ] Docker ou Docker Compose n'a pas été installé correctement ${neutre}"
+    fi
+
+    decompte 3
+}
+
 
 ######## VALIDATION DES CHANGEMENTS ###########################################################
 
@@ -892,7 +1252,11 @@ function validChang() {
 
 ######## MENU ###########################################################
 
-clear
+# Test compte root
+testRootCpt
+
+
+# Menu
 while true ; do 
 echo -e "${bleu}           ________     ${neutre} ______     ${rouge}_________ ${neutre}"
 echo -e "${bleu}          /_______/\    ${neutre}/_____/\   ${rouge}/________/\ ${neutre}"
@@ -962,10 +1326,16 @@ echo " "
     echo -e "\t[ ${vert}120${neutre} ] - Installation de powershell sous Linux"
     echo -e "\t[ ${vert}121${neutre} ] - Installation du Packer/Depacker UPX"
 
+    echo -e "\e[3C${bleu}[ --    ${souligne}ANDROID TOOLS${neutrePolice}${bleu}     -- ]${neutre}"
+    echo -e "\t[ ${vert}130${neutre} ] - Installation de ADB et FASTBOOT"
+
+    echo -e "\e[3C${bleu}[ --    ${souligne}DOCKER TOOLS${neutrePolice}${bleu}     -- ]${neutre}"
+    echo -e "\t[ ${vert}140${neutre} ] - Installation de Docker + Docker Compose"
+
 #    echo -e "\n\e[3C${bleu}[ --    ${souligne}SIGMA${neutrePolice}${bleu}     -- ]${neutre}"
 #    echo -e "\t[ ${vert}120${neutre} ] - Installation de SIGMA : règles de détection et de partage pour les SIEM"
 
-    echo -e "\n\t[ ${vert}200${neutre} ] - ${vert}Tout installer (Sauf N°0 sourcelist)${neutre}"
+    echo -e "\n\t[ ${vert}200${neutre} ] - ${vert}Tout installer${neutre}"
     echo -e "\t[  ${rouge}F${neutre}  ] - Taper F pour finaliser l'installation..."
     echo -e "\t\t---> Dans tous les cas, une fois vos installations choisies, terminer par l'option [ F ]\n"
     echo -e "\e[20C[  ${rouge}Q${neutre}  ] - Taper ${rouge}Q${neutre} pour ${rouge}quitter${neutre}...\n"
@@ -1033,11 +1403,15 @@ echo " "
         powershellinstall ;;
    "121")
         upxinstall ;;   
+   "130")
+        androidForensics ;;
+   "140")        
+        dockerTools ;;
    "200")
-        mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; radare2inst ; volat2 ; volat3 ; convertinstall ; ramParserinstall ;\
+        sourcelist ; mjour ; installbase ; config ; creerrepertoires ; claminst ; gdbinst ; radare2inst ; volat2 ; volat3 ; convertinstall ; ramParserinstall ;\
         reginst ; burinst ; diskinst ; imagemounterE01 ; mftinst ; sleuthkitInstall ; mftdumpinst ; mountvmdkinstall ;\
         loginstall ; forall ; forextra ; forextragui ; vbox ; wineinstall ; convertinstall ; cyberchefinstall ; yarainstall ;\
-        powershellinstall ; upxinstall ;;
+        powershellinstall ; upxinstall ; androidForensics ; dockerTools ;;
     f|F) break ;;
     q|Q) exit ;;
     *) continue ;;
