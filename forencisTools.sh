@@ -35,17 +35,18 @@
 # 2024 06 18    v2.2-1.12    remplacement python3.9 par python3 / Ajout : adb fastboot docker dockerCompose
 # 2024 06 19    v2.2-1.13    ajout jq  + config thunderbird et download add-on import export tool NG
 # 2024 07 06    v2.3-0.0     Refonte type installateur, correctif VBOX + thunderbird
+# 2024 07 05    v2.3-0.1     Interdiction lancement debian 12 pour le moment ; il manque beaucoup de librairies
 
-versionIFT="v2.3-0.0 du 6 juillet 2024"
+versionIFT="v2.3-0.1 du 6 aout 2024"
 
 ##################################      INSTALLATION DES OUTILS FORENSICS POUR DEBIAN OU UBUNTU      ######################################"
 
 # VARIABLES : CHEMINS / COULEURS
       
-    utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}')
-    uidutilisateur=$(echo $UID)
-    VERSION_OS=$(grep -E '^ID=' /etc/os-release | cut -d "=" -f2)
-    VERSION_DISTRI_DEBIAN=$(grep "VERSION_CODENAME" /etc/os-release | awk -F "=" '{print $2}')
+    utilisateur=$(grep 1000 /etc/passwd | awk -F ":" '{print $1}') # toto
+    uidutilisateur=$(echo $UID) # 1000
+    VERSION_OS=$(grep -E '^ID=' /etc/os-release | cut -d "=" -f2) # debian ...
+    VERSION_DISTRI_DEBIAN=$(grep "VERSION_CODENAME" /etc/os-release | awk -F "=" '{print $2}') # bullseye / bookworm ...
     VERSION_KERNEL=$(uname -r)
     VERSION_INITRD=$(basename /boot/initrd.img-$(uname -r) | cut -d "-" -f2-4)
     ENVBUREAU="/etc/mate/"
@@ -82,6 +83,19 @@ testRootCpt() {
 }
 
 
+######## ANNULATION LANCEMENT SI DEBIAN 12
+testDebian12Annul() {
+    if [ "$VERSION_OS" = 'debian' ] && [ "$VERSION_DISTRI_DEBIAN" = 'bookworm' ] ; then
+        echo -e "\n${rouge}Le système d'exploitation ${VERSION_OS} ${VERSION_DISTRI_DEBIAN} n'est pas compatible, arrêt de l'installation ...${neutre}\n"
+        read -p "Appuyez sur une touche pour continuer ..."
+        exit 1                   
+    else
+        echo -e "\n${vert}Le système d'exploitation ${VERSION_OS} ${VERSION_DISTRI_DEBIAN} est compatible, poursuite de l'installation ...${neutre}\n"
+        read -p "Appuyez sur une touche pour continuer ..."    
+    fi
+}
+
+
 ######## DECOMPTE 
 
 decompte() {
@@ -98,10 +112,10 @@ decompte() {
 ######## MODIFICATION DES SOURCE.LIST 
 
 function sourcelist() {
-    # DEBIAN
-    if [ "$VERSION_OS" = 'debian' ] ; then
-        echo -e "\n${bleu}[ ---- Mise à jour de source.list de Debian ---- ]${neutre}\n"
-        echo "deb http://deb.debian.org/debian/ $VERSION_DISTRI_DEBIAN main non-free contrib" > /etc/apt/sources.list
+    # DEBIAN 11
+    if [ "$VERSION_OS" = 'debian' ] && [ "$VERSION_DISTRI_DEBIAN" = 'bullseye' ] ; then
+        echo -e "\n${bleu}[ ---- Mise à jour de source.list - DEBIAN 11 BULLSEYE DETECTED---- ]${neutre}\n"
+        echo "deb http://deb.debian.org/debian/ $VERSION_DISTRI_DEBIAN main non-freecontrib" > /etc/apt/sources.list
         echo "deb-src http://deb.debian.org/debian/ $VERSION_DISTRI_DEBIAN main non-free contrib" >> /etc/apt/sources.list
         echo "deb http://security.debian.org/debian-security $VERSION_DISTRI_DEBIAN-security main contrib non-free" >> /etc/apt/sources.list
         echo "deb-src http://security.debian.org/debian-security $VERSION_DISTRI_DEBIAN-security main contrib non-free" >> /etc/apt/sources.list
@@ -114,10 +128,27 @@ function sourcelist() {
         apt update && apt upgrade -y && echo -e "${vert} [ OK ] Système $VERSION_OS à jour ${neutre}"
         sleep 2
         decompte 3
+
+    # DEBIAN 12
+    elif [ "$VERSION_OS" = 'debian' ] && [ "$VERSION_DISTRI_DEBIAN" = 'bookworm' ] ; then
+        echo -e "\n${bleu}[ ---- Mise à jour de source.list - DEBIAN 12 BOOKWORM DETECTED ---- ]${neutre}\n"
+        echo "deb http://deb.debian.org/debian/ $VERSION_DISTRI_DEBIAN main non-free-firmware contrib" > /etc/apt/sources.list
+        echo "deb-src http://deb.debian.org/debian/ $VERSION_DISTRI_DEBIAN main non-free-firmware contrib" >> /etc/apt/sources.list
+        echo "deb http://security.debian.org/debian-security $VERSION_DISTRI_DEBIAN-security main contrib non-free-firmware" >> /etc/apt/sources.list
+        echo "deb-src http://security.debian.org/debian-security $VERSION_DISTRI_DEBIAN-security main contrib non-free-firmware" >> /etc/apt/sources.list
+        echo "deb http://deb.debian.org/debian/ $VERSION_DISTRI_DEBIAN-updates main contrib non-free-firmware" >> /etc/apt/sources.list
+        echo "deb-src http://deb.debian.org/debian/ $VERSION_DISTRI_DEBIAN-updates main contrib non-free-firmware" >> /etc/apt/sources.list
+        echo "deb http://deb.debian.org/debian $VERSION_DISTRI_DEBIAN-backports main contrib non-free-firmware" >> /etc/apt/sources.list
+        echo -e "${vert} [ OK ] Sources.list $VERSION_OS à jour ${neutre}"
+        apt update && apt install -y apt-transport-https
+        sed -i 's/http/https/g' /etc/apt/sources.list
+        apt update && apt upgrade -y && echo -e "${vert} [ OK ] Système $VERSION_OS à jour ${neutre}"
+        sleep 2
+        decompte 3
                       
     # UBUNTU 
     elif [ "$VERSION_OS" = 'ubuntu' ] ; then
-        echo -e "\n${bleu}[ ---- Mise à jour de source.list de Ubuntu ---- ]${neutre}\n"
+        echo -e "\n${bleu}[ ---- Mise à jour de source.list - UBUNTU DETECTED ---- ]${neutre}\n"
         echo "deb http://fr.archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse"  > /etc/apt/sources.list
         echo "deb http://security.ubuntu.com/ubuntu focal-security main restricted universe multiverse"  >> /etc/apt/sources.list
         echo "deb http://fr.archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse"  >> /etc/apt/sources.list
@@ -129,7 +160,7 @@ function sourcelist() {
         apt update && apt upgrade -y && echo -e "${vert} [ OK ] Système $VERSION_OS à jour ${neutre}"
         decompte 3
     else
-        echo -e "${rouge}Le système d'exploitation n'est ni une distribution Debian, ni une distribution unbuntu : [ Fin de l'installation ]${neutre}"
+        echo -e "${rouge}Le système d'exploitation n'est ni une distribution DEBIAN, ni une distribution UBUNTU : [ Fin de l'installation ]${neutre}"
         exit
     fi
 }
@@ -152,8 +183,8 @@ function installbase() {
     decompte 4
     apt update && apt install -y $logicielsDeBase && echo -e "${vert} [ OK ] Logiciels de Base installés ${neutre}"
 
-    if [ "$VERSION_OS" = 'debian' ] ; then
-        ## Corrections kernel Debian 11
+    ## Corrections kernel Debian 11
+    if [ "$VERSION_OS" = 'debian' ] && [ "$VERSION_DISTRI_DEBIAN" = 'bullseye' ] ; then
         echo -e "\n##############################################\n"
         echo -e "${bleu}[ Correction des erreurs au boot et à l'arrêt ]${neutre}"
         
@@ -171,6 +202,7 @@ function installbase() {
             update-initramfs -u -k all && echo -e "${vert} [ OK ] Mise à jour de l'initrd effectué ${neutre}"
         else
             echo -e "${vert} [ OK ] Pas de mise à jour car --> L'initrd version : $VERSION_INITRD = kernel version : $VERSION_KERNEL ${neutre}"
+            echo "Pas de correction car la distribution est différente de Debian 11"
         fi
         decompte 3
     fi
@@ -1254,6 +1286,8 @@ function validChang() {
 
 # Test compte root
 testRootCpt
+# Test version OS
+testDebian12Annul
 
 
 # Menu
