@@ -7,7 +7,7 @@
 # Installation automatique des Outils Forensics
 ## Compatibilité :  
 - **Ubuntu :** [ OK ]  
-- **Debian :** [ OK ]  
+- **Debian 11 :** [ OK ]  
 
 ## 1 - Présentation :
 **Script d'installation et de configuration des outils Forensics pour Debian et Ubuntu :**    
