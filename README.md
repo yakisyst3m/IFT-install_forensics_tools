@@ -1,5 +1,8 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/yakisyst3m/IFT-install_forensics_tools) 
 ![GitHub release-date](https://img.shields.io/github/release-date/yakisyst3m/IFT-install_forensics_tools)
+
+# Non compatible avec DEBIAN 12 pour le moment !!  / Not compatible with DEBIAN 12 at the moment !!
+
 #  IFT  [ INSTALL FORENSICS TOOLS ]
 # Installation automatique des Outils Forensics
 ## Compatibilité :  
