@@ -229,7 +229,7 @@ sqlite3 -header -csv /home/toto/.mozilla/firefox/zvz8ux8q.default-esr/places.sql
 ```  
 *Exemple Firefox Windows:*
 ```
-chemin=$(find /mnt/win1/Users/ -name "places.sqlite") ; for nom in $(echo $chemin | awk -F "/" '{print $5 }') ; do sqlite3 -header -csv  $chemin " select datetime(last_visit_date/1000000, 'unixepoch', 'localtime') AS last_visit_date, url from moz_places " > /cases/w_01/firefoxHistory/Wn_histFfox-$nom-$(date +%s).csv \; 2>/dev/null ; done
+chemin=$(find /mnt/win1/Users/ -name "places.sqlite") ; for nom in $(echo $chemin | awk -F "/" '{print $5 }') ; do sqlite3 -header -csv  $chemin " select datetime((last_visit_date/1000000)-11644473600, 'unixepoch', 'localtime') AS last_visit_date, url from moz_places " > /cases/w_01/firefoxHistory/Wn_histFfox-$nom-$(date +%s).csv \; 2>/dev/null ; done
 ```  
 *Exemple Firefox Linux:*
 ```
